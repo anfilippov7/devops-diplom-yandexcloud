@@ -74,6 +74,44 @@
 2. В файле `~/.kube/config` находятся данные для доступа к кластеру.
 3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
 
+
+После создания кластера пишем:
+
+ubuntu@control:~$ mkdir ~/.kube
+ubuntu@control:~$ ls
+mydir
+ubuntu@control:~$ sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+ubuntu@control:~$ sudo chown -R ubuntu:ubuntu $HOME/.kube/config
+ubuntu@control:~$ ll ~/.kube
+total 16
+drwxrwxr-x 2 ubuntu ubuntu 4096 Sep 24 12:32 ./
+drwxr-xr-x 7 ubuntu ubuntu 4096 Sep 24 12:31 ../
+-rw------- 1 ubuntu ubuntu 5661 Sep 24 12:32 config
+ubuntu@control:~$ kubectl get pods --all-namespaces
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS       AGE
+kube-system   calico-kube-controllers-648dffd99-j84gw   1/1     Running   0              9m27s
+kube-system   calico-node-gtxpx                         1/1     Running   0              22m
+kube-system   calico-node-jccxk                         1/1     Running   0              22m
+kube-system   calico-node-zg69q                         1/1     Running   0              22m
+kube-system   coredns-69db55dd76-2j6hp                  1/1     Running   0              9m7s
+kube-system   coredns-69db55dd76-tvfqn                  1/1     Running   0              8m37s
+kube-system   dns-autoscaler-6f4b597d8c-jrf9k           1/1     Running   0              9m2s
+kube-system   kube-apiserver-control                    1/1     Running   1              24m
+kube-system   kube-controller-manager-control           1/1     Running   3 (8m6s ago)   24m
+kube-system   kube-proxy-2jw4x                          1/1     Running   0              10m
+kube-system   kube-proxy-8sjfl                          1/1     Running   0              10m
+kube-system   kube-proxy-h98jj                          1/1     Running   0              10m
+kube-system   kube-scheduler-control                    1/1     Running   2 (8m7s ago)   24m
+kube-system   nginx-proxy-node1                         1/1     Running   0              23m
+kube-system   nginx-proxy-node2                         1/1     Running   0              23m
+kube-system   nodelocaldns-4lf8l                        1/1     Running   0              9m1s
+kube-system   nodelocaldns-6nq8d                        1/1     Running   0              9m1s
+kube-system   nodelocaldns-sjlqg                        1/1     Running   0              9m1s
+ubuntu@control:~$ 
+
+
+
+
 ---
 ### Создание тестового приложения
 
