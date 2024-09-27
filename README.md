@@ -57,9 +57,10 @@
 
 
 1. Создаем сервисный аккаунт, который будет использоваться Terraform для работы с инфраструктурой.
+
 <details>
 <summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`</summary>
-```
+```sh
 # Создаем сервисный аккаунт для Terraform
 resource "yandex_iam_service_account" "service" {
   folder_id = var.FOLDER_ID
@@ -104,6 +105,7 @@ provisioner "local-exec" {
 </details>  
 
 2. Создаем VPC с подсетями в разных зонах доступности.
+
 <details>
 <summary>Пишем код для создания VPC с подсетями с помощью `terraform`</summary>
 ```
@@ -126,6 +128,7 @@ resource "yandex_vpc_subnet" "subnet-b" {
   v4_cidr_blocks = ["10.10.20.0/24"]
 }
 ```
+
 </details> 
 
 3. Пробуем выполение созданного кода, проверяем работу команд `terraform apply` и `terraform destroy`.
@@ -133,7 +136,8 @@ resource "yandex_vpc_subnet" "subnet-b" {
 <details>
 
 <summary>Создание ресурсов</summary>
-```
+
+```sh
 aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_s3_network$ terraform apply
 
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
@@ -279,9 +283,12 @@ Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
   <img width="1200" height="600" src="./image/subnet.png">
 </p>
 
+</details>
 
+<details>
 <summary>Удаление ресурсов</summary>
-```
+
+```sh
 aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_s3_network$ terraform destroy
 yandex_iam_service_account.service: Refreshing state... [id=aje6og1rs2332eovt75a]
 yandex_vpc_network.net: Refreshing state... [id=enpmlj978lsfd48ug7a8]
