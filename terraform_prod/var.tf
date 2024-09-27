@@ -23,7 +23,7 @@ variable "YC_TOKEN" {
   description = "Yandex Cloud token"
   type        = string
   default     = ""
-}
+}z
 
 variable "CLOUD_ID" {
   description = "Yandex Cloud ID"
@@ -37,23 +37,11 @@ variable "FOLDER_ID" {
   default     = ""
 }
 
-variable "access_key" {
-  description = "Yandex access_key"
-  type        = string
-  default     = ""
-}
-
-# variable "META" {
-#   description = "User data for instances"
-#   type        = string
-# }
-
 variable "GITHUB_WORKSPACE" {
   description = "GitHub workspace path"
   type        = string
     default     = "/home/aleksander/devops-diplom-yandexcloud"
 }
-
 
 variable "ssh_public_key" {
   description = "SSH public key"
@@ -65,4 +53,16 @@ variable "ssh_private_key" {
   description = "SSH private key"
   type        = string
   default     = ""
+}
+
+variable "bucket_name" {
+  type        = string
+  default     = "ft-state"
+  description = "VPC network&subnet name"
+}
+
+variable "account_name" {
+  type        = string
+  default     = "service"
+  description = "VPC network&subnet name"
 }

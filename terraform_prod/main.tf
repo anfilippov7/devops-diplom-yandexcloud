@@ -17,66 +17,6 @@ data "yandex_compute_image" "ubuntu" {
   family = "ubuntu-2004-lts"
 }
 
-
-#variable "yandex_compute_instance_control" {
-#  type        = list(object({
-#    vm_name = string
-#    cores = number
-#    memory = number
-#    core_fraction = number
-#    count_vms = number
-#    platform_id = string
-#  }))
-
-#  default = [{
-#      vm_name = "control"
-#      cores         = 2
-#      memory        = 2
-#      core_fraction = 5
-#      count_vms = 1
-#      platform_id = "standard-v1"
-#    }]
-#}
-
-#variable "boot_disk_control" {
-#  type        = list(object({
-#    size = number
-#    type = string
-#    }))
-#    default = [ {
-#    size = 10
-#    type = "network-hdd"
-#  }]
-#}
-
-#variable "control_count" {
-#  type    = number
-#  default = 1
-#}
-
-
-#resource "yandex_compute_instance" "control" {
-#  name        = "${var.yandex_compute_instance_control[0].vm_name}"
-#  platform_id = var.yandex_compute_instance_control[0].platform_id
-#  allow_stopping_for_update = true
-#  count = var.yandex_compute_instance_control[0].count_vms
-#  zone = "ru-central1-a"
-#  resources {
-#    cores         = var.yandex_compute_instance_control[0].cores
-#    memory        = var.yandex_compute_instance_control[0].memory
-#    core_fraction = var.yandex_compute_instance_control[0].core_fraction
-#  }
-
-#  boot_disk {
-#    initialize_params {
-#      image_id = data.yandex_compute_image.ubuntu.image_id
-#      type     = var.boot_disk_control[0].type
-#      size     = var.boot_disk_control[0].size
-#    }
-#  }
-
-
-
 resource "yandex_compute_instance" "control" {
   name = "control"
   zone = "ru-central1-a"

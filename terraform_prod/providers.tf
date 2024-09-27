@@ -6,14 +6,14 @@ terraform {
     }
   }
 
+
+terraform {
   backend "s3" {
-    endpoint   = "storage.yandexcloud.net"
-    bucket     = "final-diplom"
-    region     = "ru-central1-a"
-    key        = "fan/terraform.tfstate"
-    access_key = "" 
-    secret_key = "" 
-    skip_region_validation      = true
+    endpoint = "storage.yandexcloud.net"
+    bucket = "for-state"
+    region = "ru-central1"
+    key = "diplom-state/terraform.tfstate"
+    skip_region_validation = true
     skip_credentials_validation = true
   }
 }

@@ -5,6 +5,6 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
-
+*.tfvars
 # own secret vars store.
 personal.auto.tfvars
