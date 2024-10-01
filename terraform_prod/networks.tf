@@ -11,6 +11,9 @@ resource "yandex_vpc_subnet" "subnet-a" {
 }
 
 resource "yandex_vpc_subnet" "subnet-b" {
+  depends_on = [
+    yandex_vpc_subnet.subnet-a
+  ]
   name           = "subnet-b"
   zone           = "ru-central1-b"
   network_id     = yandex_vpc_network.net.id

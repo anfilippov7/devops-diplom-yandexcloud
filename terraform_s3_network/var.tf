@@ -4,18 +4,21 @@ variable "YC_TOKEN" {
   description = "Yandex Cloud token"
   type        = string
   default     = ""
+  sensitive = true
 }
 
 variable "CLOUD_ID" {
   description = "Yandex Cloud ID"
   type        = string
   default     = ""
+  sensitive = true
 }
 
 variable "FOLDER_ID" {
   description = "Yandex Cloud Folder ID"
   type        = string
   default     = ""
+  sensitive = true
 }
 
 variable "default_zone" {

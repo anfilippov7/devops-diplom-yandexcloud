@@ -59,7 +59,7 @@
 1. Создаем сервисный аккаунт, который будет использоваться Terraform для работы с инфраструктурой.
 
 <details>
-<summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`</summary>
+<summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network)</summary>
 
 ```
 # Создаем сервисный аккаунт для Terraform
@@ -106,36 +106,7 @@ provisioner "local-exec" {
 
 </details>  
 
-2. Создаем VPC с подсетями в разных зонах доступности.
-
-<details>
-
-<summary>Пишем код для создания VPC с подсетями с помощью `terraform`</summary>
-
-```
-# networks
-resource "yandex_vpc_network" "net" {
-  name = "net"
-}
-
-resource "yandex_vpc_subnet" "subnet-a" {
-  name           = "subnet-a"
-  zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.net.id
-  v4_cidr_blocks = ["10.10.10.0/24"]
-}
-
-resource "yandex_vpc_subnet" "subnet-b" {
-  name           = "subnet-b"
-  zone           = "ru-central1-b"
-  network_id     = yandex_vpc_network.net.id
-  v4_cidr_blocks = ["10.10.20.0/24"]
-}
-```
-
-</details> 
-
-3. Пробуем выполение созданного кода, проверяем работу команд `terraform apply` и `terraform destroy`.
+2. Пробуем выполение созданного кода, проверяем работу команд `terraform apply` и `terraform destroy`.
 
 <details>
 
@@ -153,7 +124,7 @@ Terraform will perform the following actions:
   # yandex_iam_service_account.service will be created
   + resource "yandex_iam_service_account" "service" {
       + created_at = (known after apply)
-      + folder_id  = ""
+      + folder_id  = (sensitive value)
       + id         = (known after apply)
       + name       = "service"
     }
@@ -171,7 +142,7 @@ Terraform will perform the following actions:
 
   # yandex_resourcemanager_folder_iam_member.service_editor will be created
   + resource "yandex_resourcemanager_folder_iam_member" "service_editor" {
-      + folder_id = ""
+      + folder_id = (sensitive value)
       + id        = (known after apply)
       + member    = (known after apply)
       + role      = "editor"
@@ -197,48 +168,7 @@ Terraform will perform the following actions:
         }
     }
 
-  # yandex_vpc_network.net will be created
-  + resource "yandex_vpc_network" "net" {
-      + created_at                = (known after apply)
-      + default_security_group_id = (known after apply)
-      + folder_id                 = (known after apply)
-      + id                        = (known after apply)
-      + labels                    = (known after apply)
-      + name                      = "net"
-      + subnet_ids                = (known after apply)
-    }
-
-  # yandex_vpc_subnet.subnet-a will be created
-  + resource "yandex_vpc_subnet" "subnet-a" {
-      + created_at     = (known after apply)
-      + folder_id      = (known after apply)
-      + id             = (known after apply)
-      + labels         = (known after apply)
-      + name           = "subnet-a"
-      + network_id     = (known after apply)
-      + v4_cidr_blocks = [
-          + "10.10.10.0/24",
-        ]
-      + v6_cidr_blocks = (known after apply)
-      + zone           = "ru-central1-a"
-    }
-
-  # yandex_vpc_subnet.subnet-b will be created
-  + resource "yandex_vpc_subnet" "subnet-b" {
-      + created_at     = (known after apply)
-      + folder_id      = (known after apply)
-      + id             = (known after apply)
-      + labels         = (known after apply)
-      + name           = "subnet-b"
-      + network_id     = (known after apply)
-      + v4_cidr_blocks = [
-          + "10.10.20.0/24",
-        ]
-      + v6_cidr_blocks = (known after apply)
-      + zone           = "ru-central1-b"
-    }
-
-Plan: 7 to add, 0 to change, 0 to destroy.
+Plan: 4 to add, 0 to change, 0 to destroy.
 
 Do you want to perform these actions?
   Terraform will perform the actions described above.
@@ -246,26 +176,20 @@ Do you want to perform these actions?
 
   Enter a value: yes
 
-yandex_vpc_network.net: Creating...
 yandex_iam_service_account.service: Creating...
-yandex_vpc_network.net: Creation complete after 2s [id=enpmlj978lsfd48ug7a8]
-yandex_vpc_subnet.subnet-a: Creating...
-yandex_vpc_subnet.subnet-b: Creating...
-yandex_iam_service_account.service: Creation complete after 2s [id=aje6og1rs2332eovt75a]
-yandex_resourcemanager_folder_iam_member.service_editor: Creating...
+yandex_iam_service_account.service: Creation complete after 3s [id=ajeuseefvsihcbqb6obr]
 yandex_iam_service_account_static_access_key.terraform_service_account_key: Creating...
-yandex_vpc_subnet.subnet-a: Creation complete after 0s [id=e9bft02econc4anh6lc0]
-yandex_vpc_subnet.subnet-b: Creation complete after 1s [id=e2ltcc9lv8k8krdpnv49]
-yandex_iam_service_account_static_access_key.terraform_service_account_key: Creation complete after 2s [id=ajelv52ncvmgh91oar0k]
+yandex_resourcemanager_folder_iam_member.service_editor: Creating...
+yandex_iam_service_account_static_access_key.terraform_service_account_key: Creation complete after 1s [id=aje7gk08pprkqtnaveuj]
 yandex_storage_bucket.tf-bucket: Creating...
-yandex_resourcemanager_folder_iam_member.service_editor: Creation complete after 3s [id=________________/editor/serviceAccount:___________________]
+yandex_resourcemanager_folder_iam_member.service_editor: Creation complete after 2s [id=b1g7kr9i41eoi2fqj52o/editor/serviceAccount:ajeuseefvsihcbqb6obr]
 yandex_storage_bucket.tf-bucket: Provisioning with 'local-exec'...
-yandex_storage_bucket.tf-bucket (local-exec): Executing: ["/bin/sh" "-c" "echo export ACCESS_KEY=_______________________ > ../terraform_prod/backend.tfvars"]
+yandex_storage_bucket.tf-bucket (local-exec): Executing: ["/bin/sh" "-c" "echo export ACCESS_KEY=YCAJEA-j1KGvx5dQmA71PZLZb > ../terraform_prod/backend.tfvars"]
 yandex_storage_bucket.tf-bucket: Provisioning with 'local-exec'...
 yandex_storage_bucket.tf-bucket (local-exec): (output suppressed due to sensitive value in config)
-yandex_storage_bucket.tf-bucket: Creation complete after 5s [id=diplom-state]
+yandex_storage_bucket.tf-bucket: Creation complete after 4s [id=diplom-state]
 
-Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
 ```
 
 Проверяем создание ресурсов в консоли ЯО:
@@ -280,14 +204,6 @@ Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
   <img width="1200" height="600" src="./image/backet.png">
 </p>
 
-сеть и подсети `net` созданы:
-<p align="center">
-  <img width="1200" height="600" src="./image/net.png">
-</p>
-<p align="center">
-  <img width="1200" height="600" src="./image/subnet.png">
-</p>
-
 </details>
 
 <details>
@@ -296,12 +212,9 @@ Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_s3_network$ terraform destroy
-yandex_iam_service_account.service: Refreshing state... [id=aje6og1rs2332eovt75a]
-yandex_vpc_network.net: Refreshing state... [id=enpmlj978lsfd48ug7a8]
-yandex_resourcemanager_folder_iam_member.service_editor: Refreshing state... [id=b1g7kr9i41eoi2fqj52o/editor/serviceAccount:aje6og1rs2332eovt75a]
-yandex_iam_service_account_static_access_key.terraform_service_account_key: Refreshing state... [id=ajelv52ncvmgh91oar0k]
-yandex_vpc_subnet.subnet-a: Refreshing state... [id=e9bft02econc4anh6lc0]
-yandex_vpc_subnet.subnet-b: Refreshing state... [id=e2ltcc9lv8k8krdpnv49]
+yandex_iam_service_account.service: Refreshing state... [id=ajeuseefvsihcbqb6obr]
+yandex_resourcemanager_folder_iam_member.service_editor: Refreshing state... [id=b1g7kr9i41eoi2fqj52o/editor/serviceAccount:ajeuseefvsihcbqb6obr]
+yandex_iam_service_account_static_access_key.terraform_service_account_key: Refreshing state... [id=aje7gk08pprkqtnaveuj]
 yandex_storage_bucket.tf-bucket: Refreshing state... [id=diplom-state]
 
 Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
@@ -311,37 +224,37 @@ Terraform will perform the following actions:
 
   # yandex_iam_service_account.service will be destroyed
   - resource "yandex_iam_service_account" "service" {
-      - created_at = "2024-09-27T09:08:41Z" -> null
-      - folder_id  = "____________________" -> null
-      - id         = "aje6og1rs2332eovt75a" -> null
+      - created_at = "2024-09-30T08:03:58Z" -> null
+      - folder_id  = (sensitive value) -> null
+      - id         = "ajeuseefvsihcbqb6obr" -> null
       - name       = "service" -> null
     }
 
   # yandex_iam_service_account_static_access_key.terraform_service_account_key will be destroyed
   - resource "yandex_iam_service_account_static_access_key" "terraform_service_account_key" {
-      - access_key         = "_______________________" -> null
-      - created_at         = "2024-09-27T09:08:43Z" -> null
-      - id                 = "ajelv52ncvmgh91oar0k" -> null
+      - access_key         = "YCAJEA-j1KGvx5dQmA71PZLZb" -> null
+      - created_at         = "2024-09-30T08:04:01Z" -> null
+      - id                 = "aje7gk08pprkqtnaveuj" -> null
       - secret_key         = (sensitive value) -> null
-      - service_account_id = "aje6og1rs2332eovt75a" -> null
+      - service_account_id = "ajeuseefvsihcbqb6obr" -> null
     }
 
   # yandex_resourcemanager_folder_iam_member.service_editor will be destroyed
   - resource "yandex_resourcemanager_folder_iam_member" "service_editor" {
-      - folder_id = "____________________" -> null
-      - id        = "____________________/editor/serviceAccount:aje6og1rs2332eovt75a" -> null
-      - member    = "serviceAccount:aje6og1rs2332eovt75a" -> null
+      - folder_id = (sensitive value) -> null
+      - id        = "b1g7kr9i41eoi2fqj52o/editor/serviceAccount:ajeuseefvsihcbqb6obr" -> null
+      - member    = "serviceAccount:ajeuseefvsihcbqb6obr" -> null
       - role      = "editor" -> null
     }
 
   # yandex_storage_bucket.tf-bucket will be destroyed
   - resource "yandex_storage_bucket" "tf-bucket" {
-      - access_key            = "___________________________" -> null
+      - access_key            = "YCAJEA-j1KGvx5dQmA71PZLZb" -> null
       - acl                   = "private" -> null
       - bucket                = "diplom-state" -> null
       - bucket_domain_name    = "diplom-state.storage.yandexcloud.net" -> null
       - default_storage_class = "STANDARD" -> null
-      - folder_id             = "_____________________" -> null
+      - folder_id             = "b1g7kr9i41eoi2fqj52o" -> null
       - force_destroy         = true -> null
       - id                    = "diplom-state" -> null
       - max_size              = 0 -> null
@@ -357,51 +270,7 @@ Terraform will perform the following actions:
         }
     }
 
-  # yandex_vpc_network.net will be destroyed
-  - resource "yandex_vpc_network" "net" {
-      - created_at                = "2024-09-27T09:08:40Z" -> null
-      - default_security_group_id = "enp5aipdujdaisurgpdc" -> null
-      - folder_id                 = "____________________" -> null
-      - id                        = "enpmlj978lsfd48ug7a8" -> null
-      - labels                    = {} -> null
-      - name                      = "net" -> null
-      - subnet_ids                = [
-          - "e2ltcc9lv8k8krdpnv49",
-          - "e9bft02econc4anh6lc0",
-        ] -> null
-    }
-
-  # yandex_vpc_subnet.subnet-a will be destroyed
-  - resource "yandex_vpc_subnet" "subnet-a" {
-      - created_at     = "2024-09-27T09:08:42Z" -> null
-      - folder_id      = "____________________" -> null
-      - id             = "e9bft02econc4anh6lc0" -> null
-      - labels         = {} -> null
-      - name           = "subnet-a" -> null
-      - network_id     = "enpmlj978lsfd48ug7a8" -> null
-      - v4_cidr_blocks = [
-          - "10.10.10.0/24",
-        ] -> null
-      - v6_cidr_blocks = [] -> null
-      - zone           = "ru-central1-a" -> null
-    }
-
-  # yandex_vpc_subnet.subnet-b will be destroyed
-  - resource "yandex_vpc_subnet" "subnet-b" {
-      - created_at     = "2024-09-27T09:08:43Z" -> null
-      - folder_id      = "____________________" -> null
-      - id             = "e2ltcc9lv8k8krdpnv49" -> null
-      - labels         = {} -> null
-      - name           = "subnet-b" -> null
-      - network_id     = "enpmlj978lsfd48ug7a8" -> null
-      - v4_cidr_blocks = [
-          - "10.10.20.0/24",
-        ] -> null
-      - v6_cidr_blocks = [] -> null
-      - zone           = "ru-central1-b" -> null
-    }
-
-Plan: 0 to add, 0 to change, 7 to destroy.
+Plan: 0 to add, 0 to change, 4 to destroy.
 
 Do you really want to destroy all resources?
   Terraform will destroy all your managed infrastructure, as shown above.
@@ -409,23 +278,17 @@ Do you really want to destroy all resources?
 
   Enter a value: yes
 
-yandex_vpc_subnet.subnet-b: Destroying... [id=e2ltcc9lv8k8krdpnv49]
-yandex_resourcemanager_folder_iam_member.service_editor: Destroying... [id=_______________________/editor/serviceAccount:aje6og1rs2332eovt75a]
-yandex_vpc_subnet.subnet-a: Destroying... [id=e9bft02econc4anh6lc0]
+yandex_resourcemanager_folder_iam_member.service_editor: Destroying... [id=b1g7kr9i41eoi2fqj52o/editor/serviceAccount:ajeuseefvsihcbqb6obr]
 yandex_storage_bucket.tf-bucket: Destroying... [id=diplom-state]
-yandex_vpc_subnet.subnet-a: Destruction complete after 1s
-yandex_vpc_subnet.subnet-b: Destruction complete after 2s
-yandex_vpc_network.net: Destroying... [id=enpmlj978lsfd48ug7a8]
-yandex_vpc_network.net: Destruction complete after 0s
 yandex_resourcemanager_folder_iam_member.service_editor: Destruction complete after 3s
 yandex_storage_bucket.tf-bucket: Still destroying... [id=diplom-state, 10s elapsed]
 yandex_storage_bucket.tf-bucket: Destruction complete after 11s
-yandex_iam_service_account_static_access_key.terraform_service_account_key: Destroying... [id=ajelv52ncvmgh91oar0k]
+yandex_iam_service_account_static_access_key.terraform_service_account_key: Destroying... [id=aje7gk08pprkqtnaveuj]
 yandex_iam_service_account_static_access_key.terraform_service_account_key: Destruction complete after 1s
-yandex_iam_service_account.service: Destroying... [id=aje6og1rs2332eovt75a]
+yandex_iam_service_account.service: Destroying... [id=ajeuseefvsihcbqb6obr]
 yandex_iam_service_account.service: Destruction complete after 3s
 
-Destroy complete! Resources: 7 destroyed.
+Destroy complete! Resources: 4 destroyed.
 ```
 
 </details>
@@ -454,7 +317,295 @@ Destroy complete! Resources: 7 destroyed.
 3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
 
 
-После создания кластера пишем:
+1. Создаем VPC с подсетями в разных зонах доступности.
+
+<details>
+
+<summary>Пишем код для создания VPC с подсетями с помощью `terraform`, содержимое файла networks.tf (в каталоге terraform_prod)</summary>
+
+```
+# networks
+resource "yandex_vpc_network" "net" {
+  name = "net"
+}
+
+resource "yandex_vpc_subnet" "subnet-a" {
+  name           = "subnet-a"
+  zone           = "ru-central1-a"
+  network_id     = yandex_vpc_network.net.id
+  v4_cidr_blocks = ["10.10.10.0/24"]
+}
+
+resource "yandex_vpc_subnet" "subnet-b" {
+  name           = "subnet-b"
+  zone           = "ru-central1-b"
+  network_id     = yandex_vpc_network.net.id
+  v4_cidr_blocks = ["10.10.20.0/24"]
+}
+```
+
+</details> 
+
+2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
+
+
+<details>
+
+<summary>Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):</summary>
+
+Для подключения к создаваемым виртуальным машинам с нашей локальной машины предварительно создаем на нашей локальной машине ключ достура с помощью команды `ssh-keygen -t ed25519`, затем с помощью Terraform этот код записывается в соответствующие переменные.
+
+```
+locals {
+  ssh-keys = fileexists("~/.ssh/id_ed25519.pub") ? file("~/.ssh/id_ed25519.pub") : var.ssh_public_key
+  ssh-private-keys = fileexists("~/.ssh/id_ed25519") ? file("~/.ssh/id_ed25519") : var.ssh_private_key
+}
+
+data "template_file" "meta" {
+ template = file("${path.module}/meta.yml")
+ vars = {
+   ssh_public_key = local.ssh-keys
+   ssh_private_key = local.ssh-private-keys
+ }
+}
+
+
+# instances
+data "yandex_compute_image" "ubuntu" {
+  family = "ubuntu-2004-lts"
+}
+
+resource "yandex_compute_instance" "control" {
+  name = "control"
+  zone = "ru-central1-a"
+  hostname = "control"
+  allow_stopping_for_update = true
+
+  resources {
+    core_fraction = var.core_fraction
+    cores = 2
+    memory = 2
+  }
+
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.id
+      size = 20
+      type = var.disk_type
+    }
+  }
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.subnet-a.id
+    ip_address = "10.10.10.10"
+    nat = true
+  }
+
+  metadata = {
+    ssh-keys = "ubuntu:${local.ssh-keys}"
+    serial-port-enable = "1"
+    user-data          = data.template_file.meta.rendered
+  }
+
+  scheduling_policy {
+    preemptible = var.preemptible
+  }
+}
+
+resource "yandex_compute_instance" "node1" {
+  name = "node1"
+  zone = "ru-central1-b"
+  hostname = "node1"
+  allow_stopping_for_update = true
+
+  resources {
+    core_fraction = var.core_fraction
+    cores = 2
+    memory = 2
+  }
+
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.id
+      size = 20
+      type = var.disk_type
+    }
+  }
+
+  network_interface {
+    subnet_id = yandex_vpc_subnet.subnet-b.id
+    ip_address = "10.10.20.11"
+    nat = true
+  }
+
+  metadata = {
+    ssh-keys = "ubuntu:${local.ssh-keys}"
+    serial-port-enable = "1"
+    user-data          = data.template_file.meta.rendered
+  }
+
+```
+
+</details>
+
+3. Для разворачивания Kubernetes-кластера скачиваем на свою локальную машину [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
+
+<details>
+
+<summary>Подготавливаем файл ansible.tf для установки Kubernetes-кластера, (в каталоге terraform_prod):</summary> 
+
+В результате в файл hosts.yaml записываются ip адреса созданных виртуальных машин и далее выполняется плейбук из состава библиотеки Kubespray: 
+
+```
+resource "local_file" "ansible_inventory" { 
+  content = templatefile("${path.module}/hosts.tftpl", {
+    control_ext_ip = yandex_compute_instance.control.network_interface.0.nat_ip_address
+    control_int_ip = yandex_compute_instance.control.network_interface.0.ip_address
+    node1_ext_ip   = yandex_compute_instance.node1.network_interface.0.nat_ip_address
+    node1_int_ip   = yandex_compute_instance.node1.network_interface.0.ip_address
+    node2_ext_ip   = yandex_compute_instance.node2.network_interface.0.nat_ip_address
+    node2_int_ip   = yandex_compute_instance.node2.network_interface.0.ip_address   
+  })
+  filename = "../kubespray/inventory/k8s_cluster/hosts.yaml"
+}
+
+resource "null_resource" "show_env" {
+  depends_on = [
+    local_file.ansible_inventory
+  ]
+
+  provisioner "local-exec" {
+    command = "echo -e \"\\n========================= HOSTS.YAML START =========================\\n\" && cat ../kubespray/inventory/k8s_cluster/hosts.yaml && echo -e \"\\n========================== HOSTS.YAML END ==========================\\n\""
+  }
+}
+
+
+resource "null_resource" "wait_for_port_22_control" {
+  depends_on = [
+    local_file.ansible_inventory
+  ]
+
+  provisioner "local-exec" {
+    command = "while ! nc -z ${yandex_compute_instance.control.network_interface.0.nat_ip_address}   22; do sleep   5; done"
+  }
+}
+
+resource "null_resource" "wait_for_port_22_node1" {
+  depends_on = [
+    local_file.ansible_inventory
+  ]
+
+  provisioner "local-exec" {
+    command = "while ! nc -z ${yandex_compute_instance.node1.network_interface.0.nat_ip_address}   22; do sleep   5; done"
+  }
+}
+
+resource "null_resource" "wait_for_port_22_node2" {
+  depends_on = [
+    local_file.ansible_inventory
+  ]
+
+  provisioner "local-exec" {
+    command = "while ! nc -z ${yandex_compute_instance.node2.network_interface.0.nat_ip_address}   22; do sleep   5; done"
+  }
+}
+
+resource "null_resource" "ansible_provisioner" {
+  depends_on = [
+    local_file.ansible_inventory,
+    null_resource.wait_for_port_22_control,
+    null_resource.wait_for_port_22_node1,
+    null_resource.wait_for_port_22_node2
+  ]
+
+  provisioner "local-exec" {
+    command = "cd ../kubespray && ansible-playbook -i inventory/k8s_cluster/hosts.yaml cluster.yml -b --become-user=root"
+  }
+}
+```
+
+</details>
+
+
+<details>
+
+4. Перед выполнением кода для создания виртуальных машин и должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket 
+
+После выполения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
+
+</details>
+
+<summary>Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ</summary> 
+
+Результат выполнения кода terraform и плейбука ansible:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/kubernetes.png">
+</p>
+
+сеть и подсети `net` созданы:
+<p align="center">
+  <img width="1200" height="600" src="./image/net.png">
+</p>
+<p align="center">
+  <img width="1200" height="600" src="./image/subnet.png">
+</p>
+
+</details>
+
+
+После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
+
+```
+aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_prod$ ssh ubuntu@62.84.116.137
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+New release '22.04.5 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+Last login: Mon Sep 30 09:19:07 2024 from 89.109.5.129
+ubuntu@control:~$ mkdir ~/.kube
+ubuntu@control:~$ sudo cp /etc/kubernetes/admin.conf ~/.kube/config
+ubuntu@control:~$ sudo chown -R ubuntu:ubuntu $HOME/.kube/config
+ubuntu@control:~$ ll ~/.kube
+total 16
+drwxrwxr-x 2 ubuntu ubuntu 4096 Oct  1 07:37 ./
+drwxr-xr-x 6 ubuntu ubuntu 4096 Oct  1 07:37 ../
+-rw------- 1 ubuntu ubuntu 5665 Oct  1 07:37 config
+```
+
+Проверяем доступность подов и нод кластера:
+
+```
+ubuntu@control:~$ kubectl get pods --all-namespaces
+NAMESPACE     NAME                                      READY   STATUS    RESTARTS      AGE
+kube-system   calico-kube-controllers-648dffd99-w74bq   1/1     Running   0             22h
+kube-system   calico-node-9kd5c                         1/1     Running   0             22h
+kube-system   calico-node-fdjf9                         1/1     Running   0             22h
+kube-system   calico-node-njz9f                         1/1     Running   0             22h
+kube-system   coredns-69db55dd76-bf27j                  1/1     Running   0             22h
+kube-system   coredns-69db55dd76-dfchp                  1/1     Running   0             22h
+kube-system   dns-autoscaler-6f4b597d8c-nfxg2           1/1     Running   0             22h
+kube-system   kube-apiserver-control                    1/1     Running   1             22h
+kube-system   kube-controller-manager-control           1/1     Running   2             22h
+kube-system   kube-proxy-jlbz5                          1/1     Running   0             22h
+kube-system   kube-proxy-mlwht                          1/1     Running   0             22h
+kube-system   kube-proxy-wm6j5                          1/1     Running   0             22h
+kube-system   kube-scheduler-control                    1/1     Running   2 (22h ago)   22h
+kube-system   nginx-proxy-node1                         1/1     Running   0             22h
+kube-system   nginx-proxy-node2                         1/1     Running   0             22h
+kube-system   nodelocaldns-6v9t5                        1/1     Running   0             22h
+kube-system   nodelocaldns-hj6pt                        1/1     Running   0             22h
+kube-system   nodelocaldns-zlxff                        1/1     Running   0             22h
+ubuntu@control:~$ kubectl get nodes
+NAME      STATUS   ROLES           AGE   VERSION
+control   Ready    control-plane   22h   v1.29.1
+node1     Ready    <none>          22h   v1.29.1
+node2     Ready    <none>          22h   v1.29.1
+```
 
 ubuntu@control:~$ mkdir ~/.kube
 ubuntu@control:~$ ls
@@ -487,9 +638,6 @@ kube-system   nodelocaldns-4lf8l                        1/1     Running   0     
 kube-system   nodelocaldns-6nq8d                        1/1     Running   0              9m1s
 kube-system   nodelocaldns-sjlqg                        1/1     Running   0              9m1s
 ubuntu@control:~$ 
-
-
-
 
 ---
 ### Создание тестового приложения
