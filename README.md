@@ -316,6 +316,7 @@ Destroy complete! Resources: 4 destroyed.
 2. В файле `~/.kube/config` находятся данные для доступа к кластеру.
 3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
 
+## Выполнение задания:
 
 1. Создаем VPC с подсетями в разных зонах доступности.
 
@@ -527,13 +528,13 @@ resource "null_resource" "ansible_provisioner" {
 </details>
 
 
-<details>
+
 
 4. Перед выполнением кода для создания виртуальных машин и должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket 
 
 После выполения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
 
-</details>
+<details>
 
 <summary>Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ</summary> 
 
@@ -557,7 +558,7 @@ resource "null_resource" "ansible_provisioner" {
 После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
 
 ```
-aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_prod$ ssh ubuntu@62.84.116.137
+aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
 Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
@@ -566,7 +567,7 @@ Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
 New release '22.04.5 LTS' available.
 Run 'do-release-upgrade' to upgrade to it.
 
-Last login: Mon Sep 30 09:19:07 2024 from 89.109.5.129
+Last login: Thu Oct  3 06:03:37 2024 from 89.109.5.129
 ubuntu@control:~$ mkdir ~/.kube
 ubuntu@control:~$ sudo cp /etc/kubernetes/admin.conf ~/.kube/config
 ubuntu@control:~$ sudo chown -R ubuntu:ubuntu $HOME/.kube/config
@@ -607,37 +608,6 @@ node1     Ready    <none>          22h   v1.29.1
 node2     Ready    <none>          22h   v1.29.1
 ```
 
-ubuntu@control:~$ mkdir ~/.kube
-ubuntu@control:~$ ls
-mydir
-ubuntu@control:~$ sudo cp /etc/kubernetes/admin.conf ~/.kube/config
-ubuntu@control:~$ sudo chown -R ubuntu:ubuntu $HOME/.kube/config
-ubuntu@control:~$ ll ~/.kube
-total 16
-drwxrwxr-x 2 ubuntu ubuntu 4096 Sep 24 12:32 ./
-drwxr-xr-x 7 ubuntu ubuntu 4096 Sep 24 12:31 ../
--rw------- 1 ubuntu ubuntu 5661 Sep 24 12:32 config
-ubuntu@control:~$ kubectl get pods --all-namespaces
-NAMESPACE     NAME                                      READY   STATUS    RESTARTS       AGE
-kube-system   calico-kube-controllers-648dffd99-j84gw   1/1     Running   0              9m27s
-kube-system   calico-node-gtxpx                         1/1     Running   0              22m
-kube-system   calico-node-jccxk                         1/1     Running   0              22m
-kube-system   calico-node-zg69q                         1/1     Running   0              22m
-kube-system   coredns-69db55dd76-2j6hp                  1/1     Running   0              9m7s
-kube-system   coredns-69db55dd76-tvfqn                  1/1     Running   0              8m37s
-kube-system   dns-autoscaler-6f4b597d8c-jrf9k           1/1     Running   0              9m2s
-kube-system   kube-apiserver-control                    1/1     Running   1              24m
-kube-system   kube-controller-manager-control           1/1     Running   3 (8m6s ago)   24m
-kube-system   kube-proxy-2jw4x                          1/1     Running   0              10m
-kube-system   kube-proxy-8sjfl                          1/1     Running   0              10m
-kube-system   kube-proxy-h98jj                          1/1     Running   0              10m
-kube-system   kube-scheduler-control                    1/1     Running   2 (8m7s ago)   24m
-kube-system   nginx-proxy-node1                         1/1     Running   0              23m
-kube-system   nginx-proxy-node2                         1/1     Running   0              23m
-kube-system   nodelocaldns-4lf8l                        1/1     Running   0              9m1s
-kube-system   nodelocaldns-6nq8d                        1/1     Running   0              9m1s
-kube-system   nodelocaldns-sjlqg                        1/1     Running   0              9m1s
-ubuntu@control:~$ 
 
 ---
 ### Создание тестового приложения
@@ -656,6 +626,162 @@ ubuntu@control:~$
 
 1. Git репозиторий с тестовым приложением и Dockerfile.
 2. Регистри с собранным docker image. В качестве регистри может быть DockerHub или [Yandex Container Registry](https://cloud.yandex.ru/services/container-registry), созданный также с помощью terraform.
+
+
+## Выполнение задания:
+
+1. Для выполнения задания создаем отдельный git репозиторий, в который разместим файлы django приложения и Dockerfile для создания образа этого приложения.
+
+<details>
+
+<summary>Создаем Dockerfile который создает контейнер с django приложением:</summary>
+
+```
+FROM python:3.10.1
+WORKDIR /app/
+COPY ./stocks_products .
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+RUN python3 manage.py migrate
+EXPOSE 8000
+
+ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+```
+
+</details>
+
+Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.129.94']
+
+<details>
+
+<summary>Запускаем сборку Docker образа:</summary>
+
+```
+aleksander@aleksander-System-Product-Name:~/devops-application$ docker build -t aleksander7/crud:v3 .
+[+] Building 17.2s (12/12) FINISHED                                                                              docker:default
+ => [internal] load build definition from Dockerfile                                                                       0.0s
+ => => transferring dockerfile: 381B                                                                                       0.0s
+ => [internal] load metadata for docker.io/library/python:3.10.1                                                           0.5s
+ => [internal] load .dockerignore                                                                                          0.0s
+ => => transferring context: 2B                                                                                            0.0s
+ => [1/7] FROM docker.io/library/python:3.10.1@sha256:b39f8b98308263406dc266ce9244f2e00f0d367003b401543d39854a10bd2786     0.0s
+ => [internal] load build context                                                                                          0.0s
+ => => transferring context: 6.01kB                                                                                        0.0s
+ => CACHED [2/7] WORKDIR /app/                                                                                             0.0s
+ => [3/7] COPY ./stocks_products .                                                                                         0.0s
+ => [4/7] RUN python -m venv /venv                                                                                         3.1s
+ => [5/7] RUN pip install --upgrade pip                                                                                    2.9s
+ => [6/7] RUN pip install -r requirements.txt                                                                              8.9s 
+ => [7/7] RUN python3 manage.py migrate                                                                                    0.9s 
+ => exporting to image                                                                                                     0.6s 
+ => => exporting layers                                                                                                    0.6s 
+ => => writing image sha256:1ede9ff7718957386bf8e472432b3afd1904f03d7f9d60aa947e5fc3de9a3d1f                               0.0s 
+ => => naming to docker.io/aleksander7/crud:v3                                                                                                                                      0.0s
+```
+
+</details>
+
+<details>
+
+<summary>Задаем тег для образа и загружаем его в репозиторий Docker Hub:</summary>
+
+```
+aleksander@aleksander-System-Product-Name:~/python-web/docker/Task_2/crud$ docker tag aleksander7/crud:v3 aleksander7/crud:v1.3
+aleksander@aleksander-System-Product-Name:~/python-web/docker/Task_2/crud$ docker push aleksander7/crud:v1.3
+The push refers to repository [docker.io/aleksander7/crud]
+c792c8735469: Pushed 
+0989b6a272e4: Pushed 
+86ed50530d1f: Pushed 
+2bf400247ac8: Pushed 
+74d1c8a16318: Pushed 
+5e8c25aceea8: Pushed 
+db8d0fe6cf95: Pushed 
+00901a4c6fc7: Pushed 
+7e7decd61f68: Pushed 
+aedcb370b058: Pushed 
+c3a0d593ed24: Pushed 
+26a504e63be4: Pushed 
+8bf42db0de72: Pushed 
+31892cc314cb: Pushed 
+11936051f93b: Pushed 
+v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb644628 size: 3475
+```
+</details>
+
+Проверяем загруженный образ на странице Docker Hub:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/docker.png">
+</p>
+
+
+<details>
+
+<summary>Загружаем файлы в git репозиторий.</summary>
+
+```
+aleksander@aleksander-System-Product-Name:~/devops-application$ git add .
+aleksander@aleksander-System-Product-Name:~/devops-application$ git commit -m "application_v15"
+[main 4972e8c] application_v15
+ 42 files changed, 29 insertions(+), 124 deletions(-)
+ delete mode 100644 conf/nginx.conf
+ delete mode 100644 content/.idea/.gitignore
+ delete mode 100644 content/.idea/3.2-crud.iml
+ delete mode 100644 content/.idea/inspectionProfiles/profiles_settings.xml
+ delete mode 100644 content/.idea/misc.xml
+ delete mode 100644 content/.idea/modules.xml
+ delete mode 100644 content/.idea/vcs.xml
+ delete mode 100644 content/Dockerfile
+ delete mode 100644 content/conf/nginx.conf
+ rename {content/stocks_products => stocks_products}/README.md (100%)
+ rename {content/stocks_products => stocks_products}/db.sqlite3 (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__init__.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/__init__.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/admin.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/apps.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/models.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/serializers.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/urls.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/__pycache__/views.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/admin.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/apps.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/migrations/0001_initial.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/migrations/__init__.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/migrations/__pycache__/0001_initial.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/migrations/__pycache__/__init__.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/logistic/models.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/serializers.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/urls.py (100%)
+ rename {content/stocks_products => stocks_products}/logistic/views.py (100%)
+ rename {content/stocks_products => stocks_products}/manage.py (100%)
+ rename {content/stocks_products => stocks_products}/requests-examples.http (97%)
+ rename {content/stocks_products => stocks_products}/requirements.txt (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/__init__.py (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/__pycache__/__init__.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/__pycache__/settings.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/__pycache__/urls.cpython-310.pyc (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/asgi.py (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/settings.py (98%)
+ rename {content/stocks_products => stocks_products}/stocks_products/urls.py (100%)
+ rename {content/stocks_products => stocks_products}/stocks_products/wsgi.py (100%)
+aleksander@aleksander-System-Product-Name:~/devops-application$ git push
+Перечисление объектов: 45, готово.
+Подсчет объектов: 100% (45/45), готово.
+При сжатии изменений используется до 4 потоков
+Сжатие объектов: 100% (39/39), готово.
+Запись объектов: 100% (41/41), 19.27 КиБ | 1.61 МиБ/с, готово.
+Всего 41 (изменений 4), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (4/4), completed with 1 local object.
+To https://github.com/anfilippov7/devops-application.git
+   9fed7fd..4972e8c  main -> main
+```
+</details>
 
 ---
 ### Подготовка cистемы мониторинга и деплой приложения
@@ -677,6 +803,277 @@ ubuntu@control:~$
 2. Http доступ к web интерфейсу grafana.
 3. Дашборды в grafana отображающие состояние Kubernetes кластера.
 4. Http доступ к тестовому приложению.
+
+
+## Выполнение задания:
+
+Выполняем предварительную подготовку для разворачивания приложений Kubernetes:
+
+Переходим управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
+
+```
+aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
+Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+New release '22.04.5 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+Last login: Thu Oct  3 06:03:37 2024 from 89.109.5.129
+ubuntu@control:~$ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+ubuntu@control:~$ chmod 700 get_helm.sh
+ubuntu@control:~$ ./get_helm.sh
+[WARNING] Could not find git. It is required for plugin installation.
+Downloading https://get.helm.sh/helm-v3.16.1-linux-amd64.tar.gz
+Verifying checksum... Done.
+Preparing to install helm into /usr/local/bin
+helm installed into /usr/local/bin/helm
+ubuntu@control:~$ helm version
+version.BuildInfo{Version:"v3.16.1", GitCommit:"5a5449dc42be07001fd5771d56429132984ab3ab", GitTreeState:"clean", GoVersion:"go1.22.7"}
+ubuntu@control:~$ 
+```
+
+Далее добавляем репозиторий prometheus-community и устанавливаем его с помощью helm и создаем отдельный Namespace с названием monitoring:
+
+```
+ubuntu@control:~$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+"prometheus-community" has been added to your repositories
+ubuntu@control:~$ helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "prometheus-community" chart repository
+Update Complete. ⎈Happy Helming!⎈
+ubuntu@control:~$ sudo kubectl create namespace monitoring
+namespace/monitoring created
+ubuntu@control:~$ sudo helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+"prometheus-community" has been added to your repositories
+ubuntu@control:~$ sudo helm install stable prometheus-community/kube-prometheus-stack --namespace=monitoring
+NAME: stable
+LAST DEPLOYED: Tue Oct  1 11:55:18 2024
+NAMESPACE: monitoring
+STATUS: deployed
+REVISION: 1
+NOTES:
+kube-prometheus-stack has been installed. Check its status by running:
+  kubectl --namespace monitoring get pods -l "release=stable"
+
+Visit https://github.com/prometheus-operator/kube-prometheus for instructions on how to create & configure Alertmanager and Prometheus instances using the Operator.
+ubuntu@control:~$ 
+```
+
+Просмотрим список всех доступных ресурсов в кластере Kubernetes:
+
+```
+ubuntu@control:~$ kubectl get all -n monitoring
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/alertmanager-stable-kube-prometheus-sta-alertmanager-0   2/2     Running   0          33s
+pod/prometheus-stable-kube-prometheus-sta-prometheus-0       2/2     Running   0          33s
+pod/stable-grafana-5fff8dc495-kzrd8                          2/3     Running   0          41s
+pod/stable-kube-prometheus-sta-operator-6cf7d5cf64-nk6lw     1/1     Running   0          41s
+pod/stable-kube-state-metrics-784c9bff7d-s6sx2               1/1     Running   0          41s
+pod/stable-prometheus-node-exporter-7qrxg                    1/1     Running   0          41s
+pod/stable-prometheus-node-exporter-7rmrg                    1/1     Running   0          41s
+pod/stable-prometheus-node-exporter-grnhp                    1/1     Running   0          41s
+
+NAME                                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+service/alertmanager-operated                     ClusterIP   None            <none>        9093/TCP,9094/TCP,9094/UDP   34s
+service/prometheus-operated                       ClusterIP   None            <none>        9090/TCP                     33s
+service/stable-grafana                            ClusterIP   10.233.11.242   <none>        80/TCP                       42s
+service/stable-kube-prometheus-sta-alertmanager   ClusterIP   10.233.22.232   <none>        9093/TCP,8080/TCP            42s
+service/stable-kube-prometheus-sta-operator       ClusterIP   10.233.37.164   <none>        443/TCP                      42s
+service/stable-kube-prometheus-sta-prometheus     ClusterIP   10.233.7.215    <none>        9090/TCP,8080/TCP            42s
+service/stable-kube-state-metrics                 ClusterIP   10.233.46.138   <none>        8080/TCP                     42s
+service/stable-prometheus-node-exporter           ClusterIP   10.233.5.157    <none>        9100/TCP                     42s
+
+NAME                                             DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/stable-prometheus-node-exporter   3         3         3       3            3           kubernetes.io/os=linux   41s
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/stable-grafana                        0/1     1            0           41s
+deployment.apps/stable-kube-prometheus-sta-operator   1/1     1            1           41s
+deployment.apps/stable-kube-state-metrics             1/1     1            1           41s
+
+NAME                                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/stable-grafana-5fff8dc495                        1         1         0       41s
+replicaset.apps/stable-kube-prometheus-sta-operator-6cf7d5cf64   1         1         1       41s
+replicaset.apps/stable-kube-state-metrics-784c9bff7d             1         1         1       41s
+
+NAME                                                                    READY   AGE
+statefulset.apps/alertmanager-stable-kube-prometheus-sta-alertmanager   1/1     34s
+statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     33s
+```
+
+Организация внешнего Http доступа к web интерфейсу grafana:
+
+Чтобы подключаться к серверу извне перенастроим сервисы(svc) созданные для kube-prometheus-stack.
+По умолчанию используется ClusterIP. Для того чтобы подключиться извне у сервисов меняем тип порта на NodePort
+Для этого выполняем команды:
+
+kubectl edit svc stable-kube-prometheus-sta-prometheus -n monitoring и вносим изменения,
+
+<p align="center">
+  <img width="1200" height="600" src="./image/prometheus.png">
+</p>
+
+kubectl edit svc stable-grafana -n monitoring и вносим изменения
+
+<p align="center">
+  <img width="1200" height="600" src="./image/grafana.png">
+</p>
+
+
+Проверяем внесенные изменения
+
+```
+ubuntu@control:~$ kubectl get all -n monitoring
+NAME                                                         READY   STATUS    RESTARTS   AGE
+pod/alertmanager-stable-kube-prometheus-sta-alertmanager-0   2/2     Running   0          3m7s
+pod/prometheus-stable-kube-prometheus-sta-prometheus-0       2/2     Running   0          3m7s
+pod/stable-grafana-5fff8dc495-kzrd8                          3/3     Running   0          3m15s
+pod/stable-kube-prometheus-sta-operator-6cf7d5cf64-nk6lw     1/1     Running   0          3m15s
+pod/stable-kube-state-metrics-784c9bff7d-s6sx2               1/1     Running   0          3m15s
+pod/stable-prometheus-node-exporter-7qrxg                    1/1     Running   0          3m15s
+pod/stable-prometheus-node-exporter-7rmrg                    1/1     Running   0          3m15s
+pod/stable-prometheus-node-exporter-grnhp                    1/1     Running   0          3m15s
+
+NAME                                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
+service/alertmanager-operated                     ClusterIP   None            <none>        9093/TCP,9094/TCP,9094/UDP      3m8s
+service/prometheus-operated                       ClusterIP   None            <none>        9090/TCP                        3m7s
+service/stable-grafana                            NodePort    10.233.11.242   <none>        80:32548/TCP                    3m16s
+service/stable-kube-prometheus-sta-alertmanager   ClusterIP   10.233.22.232   <none>        9093/TCP,8080/TCP               3m16s
+service/stable-kube-prometheus-sta-operator       ClusterIP   10.233.37.164   <none>        443/TCP                         3m16s
+service/stable-kube-prometheus-sta-prometheus     NodePort    10.233.7.215    <none>        9090:32558/TCP,8080:32752/TCP   3m16s
+service/stable-kube-state-metrics                 ClusterIP   10.233.46.138   <none>        8080/TCP                        3m16s
+service/stable-prometheus-node-exporter           ClusterIP   10.233.5.157    <none>        9100/TCP                        3m16s
+
+NAME                                             DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+daemonset.apps/stable-prometheus-node-exporter   3         3         3       3            3           kubernetes.io/os=linux   3m15s
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/stable-grafana                        1/1     1            1           3m15s
+deployment.apps/stable-kube-prometheus-sta-operator   1/1     1            1           3m15s
+deployment.apps/stable-kube-state-metrics             1/1     1            1           3m15s
+
+NAME                                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/stable-grafana-5fff8dc495                        1         1         1       3m15s
+replicaset.apps/stable-kube-prometheus-sta-operator-6cf7d5cf64   1         1         1       3m15s
+replicaset.apps/stable-kube-state-metrics-784c9bff7d             1         1         1       3m15s
+
+NAME                                                                    READY   AGE
+statefulset.apps/alertmanager-stable-kube-prometheus-sta-alertmanager   1/1     3m8s
+statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     3m7s
+```
+
+
+Логин/пароль для доступа к вэб-интерфейсу: admin/prom-operator
+
+<p align="center">
+  <img width="1200" height="600" src="./image/dashboard.png">
+</p>
+
+
+Развёрачиваем тестовое приложение на Kubernetes кластере.
+
+Создаем манифест Deployment с тестовым приложением:
+
+```
+---
+apiVersion : v1
+kind : Service
+metadata :
+  name : djangoapps-svc
+  namespace: application
+spec :
+  selector :
+    app : djangoapps
+  type : LoadBalancer
+  ports :
+    - port : 8000
+      targetPort : 8000
+---
+apiVersion : apps/v1
+kind : Deployment
+metadata :
+  name : djangoapps
+  namespace: application
+spec :
+  replicas : 1
+  selector :
+    matchLabels :
+      app : djangoapps
+  template :
+    metadata :
+      labels :
+        app : djangoapps
+    spec :
+      containers :
+      - name : djangoapps
+        image: docker.io/aleksander7/crud:v1.3
+        ports :
+          - containerPort : 8000
+        imagePullPolicy : Always
+```
+
+Клонируем репозиторий с приложением на мастер ноду, и применяем манифест deployment:
+
+```
+ubuntu@control:~$ git clone https://github.com/anfilippov7/devops-application.git
+Cloning into 'devops-application'...
+remote: Enumerating objects: 147, done.
+remote: Counting objects: 100% (147/147), done.
+remote: Compressing objects: 100% (108/108), done.
+remote: Total 147 (delta 29), reused 133 (delta 18), pack-reused 0 (from 0)
+Receiving objects: 100% (147/147), 1.26 MiB | 4.65 MiB/s, done.
+Resolving deltas: 100% (29/29), done. 
+```
+
+Создаем namespace для приложения и разворачиваем его:
+
+```
+ubuntu@control:~$ sudo kubectl create namespace application
+namespace/application created
+ubuntu@control:~$ cd devops-application/k8s/
+ubuntu@control:~/devops-application/k8s$ sudo kubectl apply -f 'deployment .yaml' -n application
+service/djangoapps-svc created
+deployment.apps/djangoapps created
+ubuntu@control:~/devops-application/k8s$ kubectl get all -n application
+NAME                              READY   STATUS    RESTARTS   AGE
+pod/djangoapps-845746bbff-479m5   1/1     Running   0          28s
+
+NAME                     TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/djangoapps-svc   LoadBalancer   10.233.41.209   <pending>     8000:32225/TCP   28s
+
+NAME                         READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/djangoapps   1/1     1            1           28s
+
+NAME                                    DESIRED   CURRENT   READY   AGE
+replicaset.apps/djangoapps-845746bbff   1         1         1       28s
+```
+
+Проверяем работу приложения через браузер
+
+<p align="center">
+  <img width="1200" height="600" src="./image/django1.png">
+</p>
+
+Переходим по соответствующему url:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/django2.png">
+</p>
+
+Пробуем записать данные:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/django3.png">
+</p>
+
+Смотрим результат:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/django4.png">
+</p>
 
 ---
 ### Установка и настройка CI/CD

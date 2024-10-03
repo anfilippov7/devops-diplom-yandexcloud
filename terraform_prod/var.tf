@@ -3,7 +3,7 @@
 variable "core_fraction" {
   type = string
   # 5, 20, 100
-  default = "5"
+  default = "100"
 }
 
 variable "disk_type" {

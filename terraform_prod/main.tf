@@ -26,7 +26,7 @@ resource "yandex_compute_instance" "control" {
   resources {
     core_fraction = var.core_fraction
     cores = 2
-    memory = 2
+    memory = 4
   }
 
   boot_disk {
@@ -63,7 +63,7 @@ resource "yandex_compute_instance" "node1" {
   resources {
     core_fraction = var.core_fraction
     cores = 2
-    memory = 2
+    memory = 4
   }
 
   boot_disk {
@@ -100,7 +100,7 @@ resource "yandex_compute_instance" "node2" {
   resources {
     core_fraction = var.core_fraction
     cores  = 2
-    memory = 2
+    memory = 4
   }
 
   boot_disk {
