@@ -811,6 +811,10 @@ To https://github.com/anfilippov7/devops-application.git
 
 Переходим управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
 
+<details>
+
+<summary>Команды выполнения</summary>
+
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
 Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
@@ -835,7 +839,13 @@ version.BuildInfo{Version:"v3.16.1", GitCommit:"5a5449dc42be07001fd5771d56429132
 ubuntu@control:~$ 
 ```
 
+</details>
+
 Далее добавляем репозиторий prometheus-community и устанавливаем его с помощью helm и создаем отдельный Namespace с названием monitoring:
+
+<details>
+
+<summary>Команды выполнения</summary>
 
 ```
 ubuntu@control:~$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -862,7 +872,13 @@ Visit https://github.com/prometheus-operator/kube-prometheus for instructions on
 ubuntu@control:~$ 
 ```
 
+</details>
+
 Просмотрим список всех доступных ресурсов в кластере Kubernetes:
+
+<details>
+
+<summary>Команды выполнения</summary>
 
 ```
 ubuntu@control:~$ kubectl get all -n monitoring
@@ -904,11 +920,17 @@ statefulset.apps/alertmanager-stable-kube-prometheus-sta-alertmanager   1/1     
 statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     33s
 ```
 
+</details>
+
 Организация внешнего Http доступа к web интерфейсу grafana:
 
 Чтобы подключаться к серверу извне перенастроим сервисы(svc) созданные для kube-prometheus-stack.
 По умолчанию используется ClusterIP. Для того чтобы подключиться извне у сервисов меняем тип порта на NodePort
 Для этого выполняем команды:
+
+<details>
+
+<summary>Команды и скриншоты выполнения</summary>
 
 kubectl edit svc stable-kube-prometheus-sta-prometheus -n monitoring и вносим изменения,
 
@@ -922,8 +944,13 @@ kubectl edit svc stable-grafana -n monitoring и вносим изменения
   <img width="1200" height="600" src="./image/grafana.png">
 </p>
 
+</details>
 
 Проверяем внесенные изменения
+
+<details>
+
+<summary>Команды выполнения</summary>
 
 ```
 ubuntu@control:~$ kubectl get all -n monitoring
@@ -972,10 +999,14 @@ statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     
   <img width="1200" height="600" src="./image/dashboard.png">
 </p>
 
+</details>
 
-Развёрачиваем тестовое приложение на Kubernetes кластере.
 
-Создаем манифест Deployment с тестовым приложением:
+Разворачиваем тестовое приложение на Kubernetes кластере.
+
+<details>
+
+<summary>Создаем манифест Deployment с тестовым приложением:</summary>
 
 ```
 ---
@@ -1015,7 +1046,11 @@ spec :
         imagePullPolicy : Always
 ```
 
-Клонируем репозиторий с приложением на мастер ноду, и применяем манифест deployment:
+</details>
+
+<details>
+
+<summary>Клонируем репозиторий с приложением на мастер ноду, и применяем манифест deployment:</summary>
 
 ```
 ubuntu@control:~$ git clone https://github.com/anfilippov7/devops-application.git
@@ -1028,7 +1063,11 @@ Receiving objects: 100% (147/147), 1.26 MiB | 4.65 MiB/s, done.
 Resolving deltas: 100% (29/29), done. 
 ```
 
-Создаем namespace для приложения и разворачиваем его:
+</details>
+
+<details>
+
+<summary>Создаем namespace для приложения и разворачиваем его:</summary>
 
 ```
 ubuntu@control:~$ sudo kubectl create namespace application
@@ -1051,7 +1090,11 @@ NAME                                    DESIRED   CURRENT   READY   AGE
 replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 ```
 
-Проверяем работу приложения через браузер
+</details>
+
+<details>
+
+<summary>Проверяем работу приложения через браузер</summary>
 
 <p align="center">
   <img width="1200" height="600" src="./image/django1.png">
@@ -1075,6 +1118,8 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
   <img width="1200" height="600" src="./image/django4.png">
 </p>
 
+</details>
+
 ---
 ### Установка и настройка CI/CD
 
@@ -1092,6 +1137,211 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 1. Интерфейс ci/cd сервиса доступен по http.
 2. При любом коммите в репозиторие с тестовым приложением происходит сборка и отправка в регистр Docker образа.
 3. При создании тега (например, v1.0.0) происходит сборка и отправка с соответствующим label в регистри, а также деплой соответствующего Docker образа в кластер Kubernetes.
+
+
+## Выполнение задания:
+
+Выполняем настройку ci/cd системы для автоматической сборки docker image и деплоя приложения при изменении кода.
+
+1. Для организации процессов CI/CD воспользуемся функционалом GitLab, создаем репозиторий и отправляем наше приложение в этот репозиторий:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/gitlab.png">
+</p>
+
+2. Заливаем приложение в созданный репозиторий GitLab:
+
+```
+aleksander@aleksander-System-Product-Name:~/devops-application$ git remote add diplom https://gitlab.com/anfilippov7/devops-application.git
+aleksander@aleksander-System-Product-Name:~/devops-application$ git branch -M main
+aleksander@aleksander-System-Product-Name:~/devops-application$ git remote -v
+diplom  https://gitlab.com/anfilippov7/devops-application.git (fetch)
+diplom  https://gitlab.com/anfilippov7/devops-application.git (push)
+origin  https://github.com/anfilippov7/devops-application.git (fetch)
+origin  https://github.com/anfilippov7/devops-application.git (push)
+aleksander@aleksander-System-Product-Name:~/devops-application$ git push -f diplom 
+Username for 'https://gitlab.com': anfilippov7
+Password for 'https://anfilippov7@gitlab.com': 
+Перечисление объектов: 156, готово.
+Подсчет объектов: 100% (156/156), готово.
+При сжатии изменений используется до 4 потоков
+Сжатие объектов: 100% (134/134), готово.
+Запись объектов: 100% (156/156), 1.26 МиБ | 2.63 МиБ/с, готово.
+Всего 156 (изменений 35), повторно использовано 3 (изменений 0), повторно использовано пакетов 0
+remote: Resolving deltas: 100% (35/35), done.
+To https://gitlab.com/anfilippov7/devops-application.git
+ + fae3cab...4972e8c main -> main (forced update)
+```
+
+3. Проверяем результат на GitLab:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/gitlab2.png">
+</p>
+
+4. Для автоматизации процесса CI/CD создаем GitLab Runner, который будет выполнять задачи, указанные в файле .gitlab-ci.yml
+
+5. На странице настроек проекта в разделе подключения GitLab Runner создаем Runner. Указанные на странице данные понадобятся для регистрации и аутентификации Runner'а в проекте.
+
+<p align="center">
+  <img width="1200" height="600" src="./image/gitlab3.png">
+</p>
+
+6. Выполняем подготовку Kubernetes кластера к установке GitLab Runner'а. Создаем отдельный Namespace, в котором будет располагаться GitLab Runner и создаем Kubernetes secret, который будет использоваться для регистрации установленного в дальнейшем GitLab Runner:
+
+```
+ubuntu@control:~$ kubectl create namespace gitlab-runner
+namespace/gitlab-runner created
+ubuntu@control:~$ kubectl --namespace=gitlab-runner create secret generic runner-secret --from-literal=runner-registration-token="glrt-8G79CdQFjRbJKAHvoZs_" --from-literal=runner-token=""
+secret/runner-secret created
+```
+
+Также понадобится подготовить файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
+
+
+Загружаем Runner из репозитория на ноду control
+
+```
+ubuntu@control:~$ git remote add origin https://github.com/anfilippov7/devops-application.git
+ubuntu@control:~$ git remote -v
+origin  https://github.com/anfilippov7/devops-application.git (fetch)
+origin  https://github.com/anfilippov7/devops-application.git (push)
+ubuntu@control:~$ git pull origin main
+remote: Enumerating objects: 160, done.
+remote: Counting objects: 100% (160/160), done.
+remote: Compressing objects: 100% (117/117), done.
+remote: Total 160 (delta 36), reused 141 (delta 20), pack-reused 0 (from 0)
+Receiving objects: 100% (160/160), 1.26 MiB | 5.43 MiB/s, done.
+Resolving deltas: 100% (36/36), done.
+From https://github.com/anfilippov7/devops-application
+ * branch            main       -> FETCH_HEAD
+ * [new branch]      main       -> origin/main
+```
+
+Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
+
+```
+ubuntu@control:~$ helm repo add gitlab https://charts.gitlab.io
+"gitlab" has been added to your repositories
+ubuntu@control:~$ helm install gitlab-runner gitlab/gitlab-runner -n gitlab-runner -f helm-runner/values.yaml
+NAME: gitlab-runner
+LAST DEPLOYED: Fri Oct  4 09:29:03 2024
+NAMESPACE: gitlab-runner
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Your GitLab Runner should now be registered against the GitLab instance reachable at: "https://gitlab.com"
+
+#############################################################################################
+## WARNING: You enabled `rbac` without specifying if a service account should be created.  ##
+## Please set `serviceAccount.create` to either `true` or `false`.                         ##
+## For backwards compatibility a service account will be created.                          ##
+#############################################################################################
+```
+Проверяем результат установки:
+
+```
+ubuntu@control:~$ helm list -n gitlab-runner
+NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+gitlab-runner   gitlab-runner   1               2024-10-04 09:29:03.408118155 +0000 UTC deployed        gitlab-runner-0.69.0    17.4.0     
+ubuntu@control:~$ kubectl -n gitlab-runner get pods
+NAME                             READY   STATUS    RESTARTS   AGE
+gitlab-runner-7854c6cb4d-kq7bq   1/1     Running   0          8m20s
+```
+
+GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/runner.png">
+</p>
+
+Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
+
+<details>
+
+```
+stages:
+  - build
+  - push
+  - deploy
+variables:
+  IMAGE_NAME: "crud"
+  DOCKER_IMAGE_TAG: $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  DOCKER_REGISTRY_IMAGE: $DOCKER_REGISTRY_USER/$IMAGE_NAME
+image: docker:latest
+services:
+- docker:dind
+before_script:
+  - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
+
+Build:
+  stage: build
+  script:
+    - docker pull $DOCKER_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --cache-from $DOCKER_REGISTRY_IMAGE:latest
+      --label "org.opencontainers.image.title=$CI_PROJECT_TITLE"
+      --label "org.opencontainers.image.url=$CI_PROJECT_URL"
+      --label "org.opencontainers.image.created=$CI_JOB_STARTED_AT"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.version=$CI_COMMIT_REF_NAME"
+      --tag $DOCKER_IMAGE_TAG
+      .
+
+    - docker push $DOCKER_IMAGE_TAG
+
+Push latest:
+  variables:
+    # We are just playing with Docker here.
+    # We do not need GitLab to clone the source code.
+    GIT_STRATEGY: none
+  stage: push
+  only:
+    # Only "main" should be tagged "latest"
+    - main
+  script:
+    # Because we have no guarantee that this job will be picked up by the same runner
+    # that built the image in the previous step, we pull it again locally
+    - docker pull $DOCKER_IMAGE_TAG
+    # Then we tag it "latest"
+    - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:latest
+    # Annnd we push it.
+    - docker push $DOCKER_REGISTRY_IMAGE:latest
+
+Push tag:
+  variables:
+    # Again, we do not need the source code here. Just playing with Docker.
+    GIT_STRATEGY: none
+  stage: push
+  only:
+    # We want this job to be run on tags only.
+    - main
+  script:
+    if [ $CI_COMMIT_TAG == "true" ]; then
+    - docker pull $DOCKER_IMAGE_TAG
+    - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG ; fi
+
+Deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""] 
+  only:
+    - main
+  when: manual
+  script:
+    - kubectl apply -f k8s/deployment.yaml -n application
+```
+
+</details>
+
+На первой стадии (build) происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом latest'.
+
+На второй стадии (deploy) будет применяется конфигурационный файл для доступа к кластеру Kubernetes и манифест из git репозитория. Затем перезапускается Deployment для применения обновленного приложения. Эта стадия выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно.
 
 ---
 ## Что необходимо для сдачи задания?
