@@ -1263,7 +1263,7 @@ GitLab Runner установлен и запущен. Также можно че
 ```
 stages:
   - build
-  - push
+  - push 
   - deploy
 variables:
   IMAGE_NAME: "crud"
@@ -1272,12 +1272,11 @@ variables:
 image: docker:latest
 services:
 - docker:dind
-before_script:
-  - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
 
 Build:
   stage: build
   script:
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
     - docker pull $DOCKER_REGISTRY_IMAGE:latest || true
     - >
       docker build
@@ -1293,37 +1292,15 @@ Build:
 
     - docker push $DOCKER_IMAGE_TAG
 
-Push latest:
-  variables:
-    # We are just playing with Docker here.
-    # We do not need GitLab to clone the source code.
-    GIT_STRATEGY: none
+Push only on tags:
   stage: push
-  only:
-    # Only "main" should be tagged "latest"
-    - main
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
-    # Because we have no guarantee that this job will be picked up by the same runner
-    # that built the image in the previous step, we pull it again locally
-    - docker pull $DOCKER_IMAGE_TAG
-    # Then we tag it "latest"
-    - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:latest
-    # Annnd we push it.
-    - docker push $DOCKER_REGISTRY_IMAGE:latest
-
-Push tag:
-  variables:
-    # Again, we do not need the source code here. Just playing with Docker.
-    GIT_STRATEGY: none
-  stage: push
-  only:
-    # We want this job to be run on tags only.
-    - main
-  script:
-    if [ $CI_COMMIT_TAG == "true" ]; then
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
     - docker pull $DOCKER_IMAGE_TAG
     - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
-    - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG ; fi
+    - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
 
 Deploy:
   stage: deploy
@@ -1332,12 +1309,29 @@ Deploy:
     entrypoint: [""] 
   only:
     - main
+    - tags
   when: manual
   script:
-    - kubectl apply -f k8s/deployment.yaml -n application
+#    - kubectl set image deployment/djangoapps mycontainer=docker.io/aleksander7/crud:$CI_COMMIT_TAG -n application
+    - kubectl apply -f "k8s/deployment.yaml" -n application
 ```
 
 </details>
+
+
+Создаем secret kubectl
+
+```
+ubuntu@control:~$ kubectl create secret docker-registry registrysecret --docker-server=https://hub.docker.com/ --docker-username=<your-name> --docker-password=<your-pword> --docker-email=
+sash.f@rambler.ru
+secret/registrysecret created
+ubuntu@control:~$ kubectl get secrets
+NAME             TYPE                             DATA   AGE
+registrysecret   kubernetes.io/dockerconfigjson   1      4m48s
+```
+
+
+
 
 На первой стадии (build) происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом latest'.
 
