@@ -1263,7 +1263,6 @@ GitLab Runner установлен и запущен. Также можно че
 ```
 stages:
   - build
-  - push 
   - deploy
 variables:
   IMAGE_NAME: "crud"
@@ -1275,6 +1274,8 @@ services:
 
 Build:
   stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
     - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
     - docker pull $DOCKER_REGISTRY_IMAGE:latest || true
@@ -1289,16 +1290,6 @@ Build:
       --label "org.opencontainers.image.version=$CI_COMMIT_REF_NAME"
       --tag $DOCKER_IMAGE_TAG
       .
-
-    - docker push $DOCKER_IMAGE_TAG
-
-Push only on tags:
-  stage: push
-  rules:
-    - if: $CI_COMMIT_TAG
-  script:
-    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
-    - docker pull $DOCKER_IMAGE_TAG
     - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
     - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
 
@@ -1313,7 +1304,9 @@ Deploy:
   when: manual
   script:
 #    - kubectl set image deployment/djangoapps mycontainer=docker.io/aleksander7/crud:$CI_COMMIT_TAG -n application
-    - kubectl apply -f "k8s/deployment.yaml" -n application
+    - cd k8s && kubectl apply -f deployment.yaml -n application
+    - pwd
+#    - kubectl apply -f deployment.yaml -n application
 ```
 
 </details>
