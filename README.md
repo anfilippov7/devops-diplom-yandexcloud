@@ -557,6 +557,7 @@ resource "null_resource" "ansible_provisioner" {
 
 После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
 
+<details>
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
 Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
@@ -577,9 +578,11 @@ drwxrwxr-x 2 ubuntu ubuntu 4096 Oct  1 07:37 ./
 drwxr-xr-x 6 ubuntu ubuntu 4096 Oct  1 07:37 ../
 -rw------- 1 ubuntu ubuntu 5665 Oct  1 07:37 config
 ```
+</details>
 
 Проверяем доступность подов и нод кластера:
 
+<details>
 ```
 ubuntu@control:~$ kubectl get pods --all-namespaces
 NAMESPACE     NAME                                      READY   STATUS    RESTARTS      AGE
@@ -607,7 +610,7 @@ control   Ready    control-plane   22h   v1.29.1
 node1     Ready    <none>          22h   v1.29.1
 node2     Ready    <none>          22h   v1.29.1
 ```
-
+</details>
 
 ---
 ### Создание тестового приложения
@@ -714,12 +717,13 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 ```
 </details>
 
-Проверяем загруженный образ на странице Docker Hub:
+<summary>Проверяем загруженный образ на странице Docker Hub:</summary>
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/docker.png">
 </p>
-
+</details>
 
 <details>
 
@@ -1145,12 +1149,15 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 
 1. Для организации процессов CI/CD воспользуемся функционалом GitLab, создаем репозиторий и отправляем наше приложение в этот репозиторий:
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab.png">
 </p>
+</details>
 
 2. Заливаем приложение в созданный репозиторий GitLab:
 
+<details>
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ git remote add diplom https://gitlab.com/anfilippov7/devops-application.git
 aleksander@aleksander-System-Product-Name:~/devops-application$ git branch -M main
@@ -1172,35 +1179,43 @@ remote: Resolving deltas: 100% (35/35), done.
 To https://gitlab.com/anfilippov7/devops-application.git
  + fae3cab...4972e8c main -> main (forced update)
 ```
+</details>
 
 3. Проверяем результат на GitLab:
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab2.png">
 </p>
+</details>
 
 4. Для автоматизации процесса CI/CD создаем GitLab Runner, который будет выполнять задачи, указанные в файле .gitlab-ci.yml
 
 5. На странице настроек проекта в разделе подключения GitLab Runner создаем Runner. Указанные на странице данные понадобятся для регистрации и аутентификации Runner'а в проекте.
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab3.png">
 </p>
+</details>
 
 6. Выполняем подготовку Kubernetes кластера к установке GitLab Runner'а. Создаем отдельный Namespace, в котором будет располагаться GitLab Runner и создаем Kubernetes secret, который будет использоваться для регистрации установленного в дальнейшем GitLab Runner:
 
+<details>
 ```
 ubuntu@control:~$ kubectl create namespace gitlab-runner
 namespace/gitlab-runner created
-ubuntu@control:~$ kubectl --namespace=gitlab-runner create secret generic runner-secret --from-literal=runner-registration-token="glrt-8G79CdQFjRbJKAHvoZs_" --from-literal=runner-token=""
+ubuntu@control:~$ kubectl --namespace=gitlab-runner create secret generic runner-secret --from-literal=runner-registration-token="<token>" --from-literal=runner-token=""
 secret/runner-secret created
 ```
+</details>
 
 Также понадобится подготовить файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
 
 
 Загружаем Runner из репозитория на ноду control
 
+<details>
 ```
 ubuntu@control:~$ git remote add origin https://github.com/anfilippov7/devops-application.git
 ubuntu@control:~$ git remote -v
@@ -1217,9 +1232,11 @@ From https://github.com/anfilippov7/devops-application
  * branch            main       -> FETCH_HEAD
  * [new branch]      main       -> origin/main
 ```
+</details>
 
 Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
 
+<details>
 ```
 ubuntu@control:~$ helm repo add gitlab https://charts.gitlab.io
 "gitlab" has been added to your repositories
@@ -1239,8 +1256,11 @@ Your GitLab Runner should now be registered against the GitLab instance reachabl
 ## For backwards compatibility a service account will be created.                          ##
 #############################################################################################
 ```
+</details>
+
 Проверяем результат установки:
 
+<details>
 ```
 ubuntu@control:~$ helm list -n gitlab-runner
 NAME            NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
@@ -1249,12 +1269,15 @@ ubuntu@control:~$ kubectl -n gitlab-runner get pods
 NAME                             READY   STATUS    RESTARTS   AGE
 gitlab-runner-7854c6cb4d-kq7bq   1/1     Running   0          8m20s
 ```
+</details>
 
 GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/runner.png">
 </p>
+</details>
 
 Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
 
@@ -1320,6 +1343,7 @@ Deploy:
 
 Создаем secret kubectl
 
+<details>
 ```
 ubuntu@control:~$ kubectl create secret docker-registry registrysecret --docker-server=https://hub.docker.com/ --docker-username=<your-name> --docker-password=<your-pword> --docker-email=
 sash.f@rambler.ru
@@ -1328,9 +1352,11 @@ ubuntu@control:~$ kubectl get secrets
 NAME             TYPE                             DATA   AGE
 registrysecret   kubernetes.io/dockerconfigjson   1      4m48s
 ```
+</details>
 
-Прописывем созданный secret `registrysecret` в файл `deployment.yaml`
+Для доступа к `image` на `dockerhub` прописывем созданный secret `registrysecret` в файл `deployment.yaml`
 
+<details>
 ```
 ---
 apiVersion : v1
@@ -1370,9 +1396,11 @@ spec :
       imagePullSecrets:
         - name: registrysecret
 ```
+</details>
 
 Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
 
+<details>
 ```
 ubuntu@control:~$ kubectl create sa build-robot -n application
 serviceaccount/build-robot created
@@ -1382,9 +1410,11 @@ ubuntu@control:~$ kubectl create rolebinding build-robot \
 >   --serviceaccount application:build-robot
 rolebinding.rbac.authorization.k8s.io/build-robot created
 ```
+</details>
 
 Просмотрим созданный аккаунт
 
+<details>
 ```
 ubuntu@control:~$ kubectl get serviceaccounts/build-robot -o yaml -n application
 apiVersion: v1
@@ -1396,9 +1426,11 @@ metadata:
   resourceVersion: "674422"
   uid: 24ed51a0-13fd-450c-84f6-a7a3c91fc85d
 ```
+</details>
 
 Создаем секрет для аккаунта build-robot в пространстве имен application
 
+<details>
 ```
 ubuntu@control:~$ kubectl apply -f - <<EOF
 > apiVersion: v1
@@ -1412,9 +1444,11 @@ ubuntu@control:~$ kubectl apply -f - <<EOF
 > EOF
 secret/build-robot-secret created
 ```
+</details>
 
-Смотрим созданный секрет
+Проверяем созданный секрет
 
+<details>
 ```
 ubuntu@control:~$ kubectl get secret build-robot-secret --namespace=application -o yaml
 apiVersion: v1
@@ -1438,16 +1472,19 @@ metadata:
   uid: 719ebda0-2916-4184-865a-91235621e317
 type: kubernetes.io/service-account-token
 ```
+</details>
 
 Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/token.png">
 </p>
-
+</details>
 
 Вносим изменения в файл .gitlab-ci.yml
 
+<details>
 ```
 stages:
   - build
@@ -1495,25 +1532,26 @@ Deploy:
   before_script:
     # Set kubernetes credentials
     - export KUBECONFIG=/tmp/kubeconfig
-    - kubectl config set-cluster cluster.local --insecure-skip-tls-verify=true --server=https://51.250.72.10:6443
+    - kubectl config set-cluster cluster.local --insecure-skip-tls-verify=true --server=https://89.169.150.207:6443
     - kubectl config set-credentials kubernetes-admin --token="$(echo $K8S_CI_TOKEN | base64 -d)"
     - kubectl config set-context kubernetes-admin --cluster=cluster.local --user=kubernetes-admin --namespace application
     - kubectl config use-context kubernetes-admin  
   script:
     - kubectl apply -f deployment.yaml -n application --validate=false
 ```
+</details>
 
+На первой стадии процесса CI/CD (build) происходит проверка наличия тега в коммите приложения, если тег присутсвует, происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом коммита'.
 
-На первой стадии (build) происходит проверка наличия тега в коммите приложения, если тег присутсвует, происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом коммита'.
-
-Вторая стадия (deploy) выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно. На этой стадии происходит подключение и аутентификация ci/cd процесса gitlab на нашем кластере kubernetes, в данном случае с ip адресом и портом 51.250.72.10:6443. Затем перезапускается Deployment для применения обновленного приложения. 
+Вторая стадия (deploy) выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно. На этой стадии происходит подключение и аутентификация ci/cd процесса gitlab на нашем кластере kubernetes, в данном случае с ip адресом и портом 89.169.150.207:6443. Затем перезапускается Deployment для применения обновленного приложения. 
 
 
 Проверим работу процесса CI/CD
 
  - добавим новую сущность в наше приложение, например информацию о доставке товаров со склада:
  добавляем соответствующий маршрут `logistic` в файл `urls.py`
-  
+
+<details>  
 ```
 from rest_framework.routers import DefaultRouter
 
@@ -1526,8 +1564,11 @@ router.register('logistic', LogisticViewSet)
 
 urlpatterns = router.urls
 ```
+</details>
+
  чтобы не было ошибки приложения создаем LogisticViewSet (просто для примера) в файле views.py
- 
+
+<details>  
 ```
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
@@ -1557,9 +1598,11 @@ class LogisticViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ['title', 'description']
 ```
+</details>
 
 И добавляем модель сущности Logistic
 
+<details>
 ```
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -1602,11 +1645,13 @@ class Logistic(models.Model):
     title = models.CharField(max_length=60, unique=True)
     description = models.TextField(null=True, blank=True)
 ```
-
+</details>
 
 Выполняем проверку работы непрерывной интеграции
 
  - отправляем новый коммит с изменениями и тегом на gitlab
+ 
+<details> 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ git add .
 aleksander@aleksander-System-Product-Name:~/devops-application$ git commit -m "application_v79"
@@ -1624,9 +1669,11 @@ To https://gitlab.com/anfilippov7/devops-application.git
    b85efb4..be61248  main -> main
  * [new tag]         v9.39 -> v9.39
 ```
+</details>
 
 Смотрим работу выполняемую в Gitlab:
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/git1.png">
 </p>
@@ -1634,12 +1681,15 @@ To https://gitlab.com/anfilippov7/devops-application.git
 <p align="center">
   <img width="1200" height="600" src="./image/git2.png">
 </p>
+</details>
 
 У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
 
+<details>
 <p align="center">
   <img width="1200" height="600" src="./image/logistic.png">
 </p>
+</details>
 
 ---
 ## Что необходимо для сдачи задания?
