@@ -1302,11 +1302,17 @@ Deploy:
     - main
     - tags
   when: manual
+  variables:
+    K8S_NAMESPACE: application   
+  before_script:
+    # Set kubernetes credentials
+    - export KUBECONFIG=/tmp/kubeconfig
+    - kubectl config set-cluster cluster.local --insecure-skip-tls-verify=true --server=https://89.169.150.207:6443
+    - kubectl config set-credentials kubernetes-admin --token="$(echo $K8S_CI_TOKEN | base64 -d)"
+    - kubectl config set-context kubernetes-admin --cluster=cluster.local --user=kubernetes-admin --namespace application
+    - kubectl config use-context kubernetes-admin  
   script:
-#    - kubectl set image deployment/djangoapps mycontainer=docker.io/aleksander7/crud:$CI_COMMIT_TAG -n application
-    - cd k8s && kubectl apply -f deployment.yaml -n application
-    - pwd
-#    - kubectl apply -f deployment.yaml -n application
+    - kubectl apply -f deployment.yaml -n application --validate=false
 ```
 
 </details>
@@ -1323,12 +1329,317 @@ NAME             TYPE                             DATA   AGE
 registrysecret   kubernetes.io/dockerconfigjson   1      4m48s
 ```
 
+Прописывем созданный secret `registrysecret` в файл `deployment.yaml`
+
+```
+---
+apiVersion : v1
+kind : Service
+metadata :
+  name : djangoapps-svc
+  namespace: application
+spec :
+  selector :
+    app : djangoapps
+  type : LoadBalancer
+  ports :
+    - port : 8000
+      targetPort : 8000
+---
+apiVersion : apps/v1
+kind : Deployment
+metadata :
+  name : djangoapps
+  namespace: application
+spec :
+  replicas : 1
+  selector :
+    matchLabels :
+      app : djangoapps
+  template :
+    metadata :
+      labels :
+        app : djangoapps
+    spec :
+      containers :
+      - name : djangoapps
+        image: docker.io/aleksander7/crud:v9.31
+        imagePullPolicy : Always
+        ports :
+          - containerPort : 8000
+      imagePullSecrets:
+        - name: registrysecret
+```
+
+Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
+
+```
+ubuntu@control:~$ kubectl create sa build-robot -n application
+serviceaccount/build-robot created
+ubuntu@control:~$ kubectl create rolebinding build-robot \
+>   -n application \
+>   --clusterrole edit \
+>   --serviceaccount application:build-robot
+rolebinding.rbac.authorization.k8s.io/build-robot created
+```
+
+Просмотрим созданный аккаунт
+
+```
+ubuntu@control:~$ kubectl get serviceaccounts/build-robot -o yaml -n application
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2024-12-04T10:58:32Z"
+  name: build-robot
+  namespace: application
+  resourceVersion: "674422"
+  uid: 24ed51a0-13fd-450c-84f6-a7a3c91fc85d
+```
+
+Создаем секрет для аккаунта build-robot в пространстве имен application
+
+```
+ubuntu@control:~$ kubectl apply -f - <<EOF
+> apiVersion: v1
+> kind: Secret
+> metadata:
+>   name: build-robot-secret
+>   namespace: application
+>   annotations:
+>     kubernetes.io/service-account.name: build-robot
+> type: kubernetes.io/service-account-token
+> EOF
+secret/build-robot-secret created
+```
+
+Смотрим созданный секрет
+
+```
+ubuntu@control:~$ kubectl get secret build-robot-secret --namespace=application -o yaml
+apiVersion: v1
+data:
+  ca.crt: 
+  <ca.crt>
+  namespace: YXBwbGljYXRpb24=
+  token: 
+  <token>
+kind: Secret
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":{"kubernetes.io/service-account.name":"build-robot"},"name":"build-robot-secret","namespace":"application"},"type":"kubernetes.io/service-account-token"}
+    kubernetes.io/service-account.name: build-robot
+    kubernetes.io/service-account.uid: 24ed51a0-13fd-450c-84f6-a7a3c91fc85d
+  creationTimestamp: "2024-12-04T12:08:23Z"
+  name: build-robot-secret
+  namespace: application
+  resourceVersion: "681886"
+  uid: 719ebda0-2916-4184-865a-91235621e317
+type: kubernetes.io/service-account-token
+```
+
+Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
+
+<p align="center">
+  <img width="1200" height="600" src="./image/token.png">
+</p>
 
 
+Вносим изменения в файл .gitlab-ci.yml
 
-На первой стадии (build) происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом latest'.
+```
+stages:
+  - build
+  - deploy
+variables:
+  IMAGE_NAME: "crud"
+  DOCKER_IMAGE_TAG: $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  DOCKER_REGISTRY_IMAGE: $DOCKER_REGISTRY_USER/$IMAGE_NAME
+image: docker:latest
+services:
+- docker:dind
 
-На второй стадии (deploy) будет применяется конфигурационный файл для доступа к кластеру Kubernetes и манифест из git репозитория. Затем перезапускается Deployment для применения обновленного приложения. Эта стадия выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно.
+Build:
+  stage: build
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_ACCESS_TOKEN
+    - docker pull $DOCKER_REGISTRY_IMAGE:latest || true
+    - >
+      docker build
+      --pull
+      --cache-from $DOCKER_REGISTRY_IMAGE:latest
+      --label "org.opencontainers.image.title=$CI_PROJECT_TITLE"
+      --label "org.opencontainers.image.url=$CI_PROJECT_URL"
+      --label "org.opencontainers.image.created=$CI_JOB_STARTED_AT"
+      --label "org.opencontainers.image.revision=$CI_COMMIT_SHA"
+      --label "org.opencontainers.image.version=$CI_COMMIT_REF_NAME"
+      --tag $DOCKER_IMAGE_TAG
+      .
+    - docker tag $DOCKER_IMAGE_TAG $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - docker push $DOCKER_REGISTRY_IMAGE:$CI_COMMIT_TAG
+
+Deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""] 
+  only:
+    - main
+    - tags
+  when: manual
+  variables:
+    K8S_NAMESPACE: application   
+  before_script:
+    # Set kubernetes credentials
+    - export KUBECONFIG=/tmp/kubeconfig
+    - kubectl config set-cluster cluster.local --insecure-skip-tls-verify=true --server=https://51.250.72.10:6443
+    - kubectl config set-credentials kubernetes-admin --token="$(echo $K8S_CI_TOKEN | base64 -d)"
+    - kubectl config set-context kubernetes-admin --cluster=cluster.local --user=kubernetes-admin --namespace application
+    - kubectl config use-context kubernetes-admin  
+  script:
+    - kubectl apply -f deployment.yaml -n application --validate=false
+```
+
+
+На первой стадии (build) происходит проверка наличия тега в коммите приложения, если тег присутсвует, происходит авторизация в Docker Hub, сборка образа и его публикация в реестре Docker Hub. Сборка образа будет происходить только для main ветки. Docker образ собирается с тегом коммита'.
+
+Вторая стадия (deploy) выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно. На этой стадии происходит подключение и аутентификация ci/cd процесса gitlab на нашем кластере kubernetes, в данном случае с ip адресом и портом 51.250.72.10:6443. Затем перезапускается Deployment для применения обновленного приложения. 
+
+
+Проверим работу процесса CI/CD
+
+ - добавим новую сущность в наше приложение, например информацию о доставке товаров со склада:
+ добавляем соответствующий маршрут `logistic` в файл `urls.py`
+  
+```
+from rest_framework.routers import DefaultRouter
+
+from logistic.views import ProductViewSet, StockViewSet, LogisticViewSet
+
+router = DefaultRouter()
+router.register('products', ProductViewSet)
+router.register('stocks', StockViewSet)
+router.register('logistic', LogisticViewSet)
+
+urlpatterns = router.urls
+```
+ чтобы не было ошибки приложения создаем LogisticViewSet (просто для примера) в файле views.py
+ 
+```
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from rest_framework.viewsets import ModelViewSet
+
+from logistic.models import Product, Stock, Logistic
+from logistic.serializers import ProductSerializer, StockSerializer
+
+
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ['title', 'description']
+
+
+class StockViewSet(ModelViewSet):
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['products']
+
+
+class LogisticViewSet(ModelViewSet):
+    queryset = Logistic.objects.all()
+    serializer_class = ProductSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ['title', 'description']
+```
+
+И добавляем модель сущности Logistic
+
+```
+from django.core.validators import MinValueValidator
+from django.db import models
+
+
+class Product(models.Model):
+    title = models.CharField(max_length=60, unique=True)
+    description = models.TextField(null=True, blank=True)
+
+
+class Stock(models.Model):
+    address = models.CharField(max_length=200, unique=True)
+    products = models.ManyToManyField(
+        Product,
+        through='StockProduct',
+        related_name='stocks',
+    )
+
+
+class StockProduct(models.Model):
+    stock = models.ForeignKey(
+        Stock,
+        on_delete=models.CASCADE,
+        related_name='positions',
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='positions',
+    )
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(
+        max_digits=18,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+    
+    
+class Logistic(models.Model):
+    title = models.CharField(max_length=60, unique=True)
+    description = models.TextField(null=True, blank=True)
+```
+
+
+Выполняем проверку работы непрерывной интеграции
+
+ - отправляем новый коммит с изменениями и тегом на gitlab
+```
+aleksander@aleksander-System-Product-Name:~/devops-application$ git add .
+aleksander@aleksander-System-Product-Name:~/devops-application$ git commit -m "application_v79"
+[main be61248] application_v79
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+aleksander@aleksander-System-Product-Name:~/devops-application$ git tag v9.39
+aleksander@aleksander-System-Product-Name:~/devops-application$ git push diplom main --tags
+Перечисление объектов: 7, готово.
+Подсчет объектов: 100% (7/7), готово.
+При сжатии изменений используется до 4 потоков
+Сжатие объектов: 100% (4/4), готово.
+Запись объектов: 100% (4/4), 366 байтов | 122.00 КиБ/с, готово.
+Всего 4 (изменений 3), повторно использовано 0 (изменений 0), повторно использовано пакетов 0
+To https://gitlab.com/anfilippov7/devops-application.git
+   b85efb4..be61248  main -> main
+ * [new tag]         v9.39 -> v9.39
+```
+
+Смотрим работу выполняемую в Gitlab:
+
+<p align="center">
+  <img width="1200" height="600" src="./image/git1.png">
+</p>
+
+<p align="center">
+  <img width="1200" height="600" src="./image/git2.png">
+</p>
+
+У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
+
+<p align="center">
+  <img width="1200" height="600" src="./image/logistic.png">
+</p>
 
 ---
 ## Что необходимо для сдачи задания?
