@@ -722,7 +722,7 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 
 </details>
 
-<summary>Проверяем загруженный образ на странице Docker Hub:</summary>
+Проверяем загруженный образ на странице Docker Hub:
 
 <details>
 
@@ -732,9 +732,9 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 
 </details>
 
-<details>
+Загружаем файлы в git репозиторий.
 
-<summary>Загружаем файлы в git репозиторий.</summary>
+<details>
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ git add .
@@ -1228,10 +1228,10 @@ secret/runner-secret created
 
 </details>
 
-Также понадобится подготовить файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
+7. Также подготавливаем файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
 
 
-Загружаем Runner из репозитория на ноду control
+8. Загружаем Runner из репозитория на ноду control
 
 <details>
 
@@ -1254,7 +1254,7 @@ From https://github.com/anfilippov7/devops-application
 
 </details>
 
-Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
+9. Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
 
 <details>
 
@@ -1280,7 +1280,7 @@ Your GitLab Runner should now be registered against the GitLab instance reachabl
 
 </details>
 
-Проверяем результат установки:
+10. Проверяем результат установки:
 
 <details>
 
@@ -1295,7 +1295,7 @@ gitlab-runner-7854c6cb4d-kq7bq   1/1     Running   0          8m20s
 
 </details>
 
-GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
+11. GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
 
 <details>
 
@@ -1305,7 +1305,7 @@ GitLab Runner установлен и запущен. Также можно че
 
 </details>
 
-Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
+12. Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
 
 <details>
 
@@ -1367,7 +1367,7 @@ Deploy:
 </details>
 
 
-Создаем secret kubectl
+13. Создаем secret kubectl
 
 <details>
 
@@ -1382,7 +1382,7 @@ registrysecret   kubernetes.io/dockerconfigjson   1      4m48s
 
 </details>
 
-Для доступа к `image` на `dockerhub` прописывем созданный secret `registrysecret` в файл `deployment.yaml`
+14. Для доступа к `image` на `dockerhub` прописывем созданный secret `registrysecret` в файл `deployment.yaml`
 
 <details>
 
@@ -1428,7 +1428,7 @@ spec :
 
 </details>
 
-Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
+15. Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
 
 <details>
 
@@ -1444,7 +1444,7 @@ rolebinding.rbac.authorization.k8s.io/build-robot created
 
 </details>
 
-Просмотрим созданный аккаунт
+16. Просмотрим созданный аккаунт
 
 <details>
 
@@ -1462,7 +1462,7 @@ metadata:
 
 </details>
 
-Создаем секрет для аккаунта build-robot в пространстве имен application
+17. Создаем секрет для аккаунта build-robot в пространстве имен application
 
 <details>
 
@@ -1482,7 +1482,7 @@ secret/build-robot-secret created
 
 </details>
 
-Проверяем созданный секрет
+18. Проверяем созданный секрет
 
 <details>
 
@@ -1512,7 +1512,7 @@ type: kubernetes.io/service-account-token
 
 </details>
 
-Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
+19. Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
 
 <details>
 
@@ -1522,7 +1522,7 @@ type: kubernetes.io/service-account-token
 
 </details>
 
-Вносим изменения в файл .gitlab-ci.yml
+20. Вносим изменения в файл .gitlab-ci.yml
 
 <details>
 
@@ -1588,9 +1588,9 @@ Deploy:
 Вторая стадия (deploy) выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно. На этой стадии происходит подключение и аутентификация ci/cd процесса gitlab на нашем кластере kubernetes, в данном случае с ip адресом и портом 89.169.150.207:6443. Затем перезапускается Deployment для применения обновленного приложения. 
 
 
-Проверим работу процесса CI/CD
+21. Проверим работу процесса CI/CD
 
- - добавим новую сущность в наше приложение, например информацию о доставке товаров со склада:
+ добавим новую сущность в наше приложение, например информацию о доставке товаров со склада:
  добавляем соответствующий маршрут `logistic` в файл `urls.py`
 
 <details>
@@ -1646,7 +1646,7 @@ class LogisticViewSet(ModelViewSet):
 
 </details>
 
-И добавляем модель сущности Logistic
+и добавляем модель сущности Logistic
 
 <details>
 
@@ -1695,9 +1695,9 @@ class Logistic(models.Model):
 
 </details>
 
-Выполняем проверку работы непрерывной интеграции
+22. Выполняем проверку работы непрерывной интеграции
 
- - отправляем новый коммит с изменениями и тегом на gitlab
+ отправляем новый коммит с изменениями и тегом на gitlab
  
 <details> 
 
@@ -1721,7 +1721,7 @@ To https://gitlab.com/anfilippov7/devops-application.git
 
 </details>
 
-Смотрим работу выполняемую в Gitlab:
+23. Смотрим работу выполняемую в Gitlab:
 
 <details>
 <p align="center">
@@ -1733,7 +1733,7 @@ To https://gitlab.com/anfilippov7/devops-application.git
 </p>
 </details>
 
-У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
+24. У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
 
 <details>
 <p align="center">
