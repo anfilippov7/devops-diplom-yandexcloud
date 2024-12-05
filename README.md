@@ -663,7 +663,7 @@ ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 </details>
 
-Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.129.94']
+2. Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.150.207']
 
 <details>
 
@@ -722,7 +722,7 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 
 </details>
 
-Проверяем загруженный образ на странице Docker Hub:
+3. Проверяем загруженный образ на странице Docker Hub:
 
 <details>
 
@@ -732,7 +732,7 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 
 </details>
 
-Загружаем файлы в git репозиторий.
+4. Загружаем файлы в git репозиторий.
 
 <details>
 
