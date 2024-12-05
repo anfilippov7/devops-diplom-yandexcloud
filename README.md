@@ -558,6 +558,7 @@ resource "null_resource" "ansible_provisioner" {
 После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
 
 <details>
+
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
 Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-196-generic x86_64)
@@ -578,11 +579,13 @@ drwxrwxr-x 2 ubuntu ubuntu 4096 Oct  1 07:37 ./
 drwxr-xr-x 6 ubuntu ubuntu 4096 Oct  1 07:37 ../
 -rw------- 1 ubuntu ubuntu 5665 Oct  1 07:37 config
 ```
+
 </details>
 
 Проверяем доступность подов и нод кластера:
 
 <details>
+
 ```
 ubuntu@control:~$ kubectl get pods --all-namespaces
 NAMESPACE     NAME                                      READY   STATUS    RESTARTS      AGE
@@ -610,6 +613,7 @@ control   Ready    control-plane   22h   v1.29.1
 node1     Ready    <none>          22h   v1.29.1
 node2     Ready    <none>          22h   v1.29.1
 ```
+
 </details>
 
 ---
@@ -715,14 +719,17 @@ c3a0d593ed24: Pushed
 11936051f93b: Pushed 
 v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb644628 size: 3475
 ```
+
 </details>
 
 <summary>Проверяем загруженный образ на странице Docker Hub:</summary>
 
 <details>
+
 <p align="center">
   <img width="1200" height="600" src="./image/docker.png">
 </p>
+
 </details>
 
 <details>
@@ -785,6 +792,7 @@ remote: Resolving deltas: 100% (4/4), completed with 1 local object.
 To https://github.com/anfilippov7/devops-application.git
    9fed7fd..4972e8c  main -> main
 ```
+
 </details>
 
 ---
