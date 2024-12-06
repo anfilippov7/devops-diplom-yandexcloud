@@ -58,10 +58,9 @@
 
 1. Создаем сервисный аккаунт, который будет использоваться Terraform для работы с инфраструктурой.
  
- -  
-<details>
+ - Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network) 
 
-<summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network)</summary>
+<details>
 
 ```
 # Создаем сервисный аккаунт для Terraform
@@ -108,12 +107,9 @@ provisioner "local-exec" {
 
 </details>  
 
-2. Пробуем выполение созданного кода, проверяем работу команд `terraform apply` и `terraform destroy`.
+ - Проверяем работу кода `terraform apply` 
 
 <details>
-
-<summary>Создание ресурсов</summary>
-
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_s3_network$ terraform apply
@@ -208,9 +204,9 @@ Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
 
 </details>
 
-<details>
+ - Проверяем работу кода `terraform destroy`
 
-<summary>Удаление ресурсов</summary>
+<details>
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-diplom-yandexcloud/terraform_s3_network$ terraform destroy
@@ -295,9 +291,8 @@ Destroy complete! Resources: 4 destroyed.
 
 </details>
 
-
- 
 ---
+
 ### Создание Kubernetes кластера
 
 На этом этапе необходимо создать [Kubernetes](https://kubernetes.io/ru/docs/concepts/overview/what-is-kubernetes/) кластер на базе предварительно созданной инфраструктуры.   Требуется обеспечить доступ к ресурсам из Интернета.
@@ -322,9 +317,9 @@ Destroy complete! Resources: 4 destroyed.
 
 1. Создаем VPC с подсетями в разных зонах доступности.
 
-<details>
+- Пишем код для создания VPC с подсетями с помощью `terraform`, содержимое файла networks.tf (в каталоге terraform_prod)
 
-<summary>Пишем код для создания VPC с подсетями с помощью `terraform`, содержимое файла networks.tf (в каталоге terraform_prod)</summary>
+<details>
 
 ```
 # networks
@@ -352,11 +347,17 @@ resource "yandex_vpc_subnet" "subnet-b" {
 2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
 
 
-<details>
+Для подключения к создаваемым виртуальным машинам с нашей локальной машины предварительно создаем на нашей локальной машине ключ достура с помощью команды `ssh-keygen -t ed25519`, затем с помощью Terraform этот код записывается в соответствующие переменные.
+
+ - Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):
 
 <summary>Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):</summary>
 
-Для подключения к создаваемым виртуальным машинам с нашей локальной машины предварительно создаем на нашей локальной машине ключ достура с помощью команды `ssh-keygen -t ed25519`, затем с помощью Terraform этот код записывается в соответствующие переменные.
+<details>
+
+
+
+
 
 ```
 locals {
@@ -619,6 +620,7 @@ node2     Ready    <none>          22h   v1.29.1
 </details>
 
 ---
+
 ### Создание тестового приложения
 
 Для перехода к следующему этапу необходимо подготовить тестовое приложение, эмулирующее основное приложение разрабатываемое вашей компанией.
@@ -798,6 +800,7 @@ To https://github.com/anfilippov7/devops-application.git
 </details>
 
 ---
+
 ### Подготовка cистемы мониторинга и деплой приложения
 
 Уже должны быть готовы конфигурации для автоматического создания облачной инфраструктуры и поднятия Kubernetes кластера.  
@@ -1135,6 +1138,7 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 </details>
 
 ---
+
 ### Установка и настройка CI/CD
 
 Осталось настроить ci/cd систему для автоматической сборки docker image и деплоя приложения при изменении кода.
