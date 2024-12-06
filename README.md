@@ -105,7 +105,7 @@ provisioner "local-exec" {
 }
 ```
 
-</details>  
+</details> 
 
  - Проверяем работу кода `terraform apply` 
 
@@ -344,7 +344,7 @@ resource "yandex_vpc_subnet" "subnet-b" {
 
 </details> 
 
--
+--
 
 2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
 
@@ -447,7 +447,7 @@ resource "yandex_compute_instance" "node1" {
 
 </details>
 
--
+--
 
 3. Для разворачивания Kubernetes-кластера скачиваем на свою локальную машину [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
 
@@ -525,7 +525,7 @@ resource "null_resource" "ansible_provisioner" {
 
 </details>
 
-- 
+-- 
 
 4. Перед выполнением кода для создания виртуальных машин должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket. После выполнения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
 
