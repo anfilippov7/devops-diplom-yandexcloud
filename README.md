@@ -344,7 +344,6 @@ resource "yandex_vpc_subnet" "subnet-b" {
 
 </details> 
 
---
 
 2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
 
@@ -447,7 +446,6 @@ resource "yandex_compute_instance" "node1" {
 
 </details>
 
---
 
 3. Для разворачивания Kubernetes-кластера скачиваем на свою локальную машину [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
 
@@ -525,7 +523,6 @@ resource "null_resource" "ansible_provisioner" {
 
 </details>
 
--- 
 
 4. Перед выполнением кода для создания виртуальных машин должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket. После выполнения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
 
@@ -630,9 +627,9 @@ node2     Ready    <none>          22h   v1.29.1
 
 1. Для выполнения задания создаем отдельный git репозиторий, в который разместим файлы django приложения и Dockerfile для создания образа этого приложения.
 
+ - Создаем Dockerfile который создает контейнер с django приложением:
+ 
 <details>
-
-<summary>Создаем Dockerfile который создает контейнер с django приложением:</summary>
 
 ```
 FROM python:3.10.1
@@ -654,11 +651,10 @@ ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 </details>
 
-2. Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.150.207']
+ - Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.150.207']
+ - Запускаем сборку Docker образа:
 
 <details>
-
-<summary>Запускаем сборку Docker образа:</summary>
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ docker build -t aleksander7/crud:v3 .
@@ -685,9 +681,9 @@ aleksander@aleksander-System-Product-Name:~/devops-application$ docker build -t 
 
 </details>
 
-<details>
+ - Задаем тег для образа и загружаем его в репозиторий Docker Hub:
 
-<summary>Задаем тег для образа и загружаем его в репозиторий Docker Hub:</summary>
+<details>
 
 ```
 aleksander@aleksander-System-Product-Name:~/python-web/docker/Task_2/crud$ docker tag aleksander7/crud:v3 aleksander7/crud:v1.3
@@ -713,17 +709,13 @@ v1.3: digest: sha256:26376ce8916ad3934cbb6cace24bba0b670cf6c950133d519274b299fb6
 
 </details>
 
-3. Проверяем загруженный образ на странице Docker Hub:
-
-<details>
+2. Проверяем загруженный образ на странице Docker Hub:
 
 <p align="center">
   <img width="1200" height="600" src="./image/docker.png">
 </p>
 
-</details>
-
-4. Загружаем файлы в git репозиторий.
+3. Загружаем файлы в git репозиторий.
 
 <details>
 
@@ -811,9 +803,9 @@ To https://github.com/anfilippov7/devops-application.git
 
 ## Выполнение задания:
 
-Выполняем предварительную подготовку для разворачивания приложений Kubernetes:
+Выполняем предварительную подготовку для разворачивания приложений Kubernetes
 
-Переходим управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
+Переходим на  управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
 
 <details>
 
