@@ -58,7 +58,7 @@
 
 1. Создаем сервисный аккаунт, который будет использоваться Terraform для работы с инфраструктурой.
  
- - Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network) 
+Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network) 
 
 <details>
 
@@ -107,7 +107,7 @@ provisioner "local-exec" {
 
 </details> 
 
- - Проверяем работу кода `terraform apply` 
+Проверяем работу кода `terraform apply` 
 
 <details>
 
@@ -204,7 +204,7 @@ Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
 
 </details>
 
- - Проверяем работу кода `terraform destroy`
+Проверяем работу кода `terraform destroy`
 
 <details>
 
@@ -317,7 +317,7 @@ Destroy complete! Resources: 4 destroyed.
 
 1. Создаем VPC с подсетями в разных зонах доступности.
 
-- Пишем код для создания VPC с подсетями с помощью `terraform`, содержимое файла networks.tf (в каталоге terraform_prod)
+Пишем код для создания VPC с подсетями с помощью `terraform`, содержимое файла networks.tf (в каталоге terraform_prod)
 
 <details>
 
@@ -349,7 +349,7 @@ resource "yandex_vpc_subnet" "subnet-b" {
 
 Для подключения к создаваемым виртуальным машинам с нашей локальной машины предварительно создаем на нашей локальной машине ключ достура с помощью команды `ssh-keygen -t ed25519`, затем с помощью Terraform этот код записывается в соответствующие переменные.
 
- - Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):
+Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):
 
 <details>
 
@@ -449,7 +449,7 @@ resource "yandex_compute_instance" "node1" {
 
 3. Для разворачивания Kubernetes-кластера скачиваем на свою локальную машину [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
 
-- Подготавливаем файл ansible.tf для установки Kubernetes-кластера, (в каталоге terraform_prod). В результате в файл hosts.yaml записываются ip адреса созданных виртуальных машин и далее выполняется плейбук из состава библиотеки Kubespray: 
+Подготавливаем файл ansible.tf для установки Kubernetes-кластера, (в каталоге terraform_prod). В результате в файл hosts.yaml записываются ip адреса созданных виртуальных машин и далее выполняется плейбук из состава библиотеки Kubespray: 
 
 <details>
 
@@ -526,9 +526,9 @@ resource "null_resource" "ansible_provisioner" {
 
 4. Перед выполнением кода для создания виртуальных машин должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket. После выполнения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
 
- - Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ
+Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ
 
- - Результат выполнения кода terraform и плейбука ansible:
+Результат выполнения кода terraform и плейбука ansible:
 
 <p align="center">
   <img width="1200" height="600" src="./image/kubernetes.png">
@@ -542,7 +542,7 @@ resource "null_resource" "ansible_provisioner" {
   <img width="1200" height="600" src="./image/subnet.png">
 </p>
 
- - После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
+После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
 
 <details>
 
@@ -569,7 +569,7 @@ drwxr-xr-x 6 ubuntu ubuntu 4096 Oct  1 07:37 ../
 
 </details>
 
- - Проверяем доступность подов и нод кластера:
+Проверяем доступность подов и нод кластера:
 
 <details>
 
@@ -627,7 +627,7 @@ node2     Ready    <none>          22h   v1.29.1
 
 1. Для выполнения задания создаем отдельный git репозиторий, в который разместим файлы django приложения и Dockerfile для создания образа этого приложения.
 
- - Создаем Dockerfile который создает контейнер с django приложением:
+Создаем Dockerfile который создает контейнер с django приложением:
  
 <details>
 
@@ -651,8 +651,8 @@ ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 </details>
 
- - Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.150.207']
- - Запускаем сборку Docker образа:
+Для того чтобы приложение django работало на кластере в файле настроек django (settings.py) прописываем IP-адрес управляющей ноды ALLOWED_HOSTS = ['89.169.150.207']
+Запускаем сборку Docker образа:
 
 <details>
 
@@ -681,7 +681,7 @@ aleksander@aleksander-System-Product-Name:~/devops-application$ docker build -t 
 
 </details>
 
- - Задаем тег для образа и загружаем его в репозиторий Docker Hub:
+Задаем тег для образа и загружаем его в репозиторий Docker Hub:
 
 <details>
 
@@ -803,13 +803,11 @@ To https://github.com/anfilippov7/devops-application.git
 
 ## Выполнение задания:
 
-Выполняем предварительную подготовку для разворачивания приложений Kubernetes
+1. Выполняем предварительную подготовку для разворачивания приложений Kubernetes. Переходим на  управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
 
-Переходим на  управляющую ноду, загружаем скрипт для установки Helm, выдаем разрешения на выполнение скрипта и запускаем установку:
+Команды выполнения:
 
 <details>
-
-<summary>Команды выполнения</summary>
 
 ```
 aleksander@aleksander-System-Product-Name:~/devops-application$ ssh ubuntu@89.169.129.94
@@ -837,11 +835,11 @@ ubuntu@control:~$
 
 </details>
 
-Далее добавляем репозиторий prometheus-community и устанавливаем его с помощью helm и создаем отдельный Namespace с названием monitoring:
+2. Добавляем репозиторий prometheus-community и устанавливаем его с помощью helm и создаем отдельный Namespace с названием monitoring:
+
+Команды выполнения:
 
 <details>
-
-<summary>Команды выполнения</summary>
 
 ```
 ubuntu@control:~$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -872,9 +870,9 @@ ubuntu@control:~$
 
 Просмотрим список всех доступных ресурсов в кластере Kubernetes:
 
-<details>
+Команды выполнения:
 
-<summary>Команды выполнения</summary>
+<details>
 
 ```
 ubuntu@control:~$ kubectl get all -n monitoring
@@ -918,35 +916,30 @@ statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     
 
 </details>
 
-Организация внешнего Http доступа к web интерфейсу grafana:
+3. Организация внешнего Http доступа к web интерфейсу grafana:
 
 Чтобы подключаться к серверу извне перенастроим сервисы(svc) созданные для kube-prometheus-stack.
 По умолчанию используется ClusterIP. Для того чтобы подключиться извне у сервисов меняем тип порта на NodePort
-Для этого выполняем команды:
 
-<details>
-
-<summary>Команды и скриншоты выполнения</summary>
-
-kubectl edit svc stable-kube-prometheus-sta-prometheus -n monitoring и вносим изменения,
+Для этого выполняем команду `kubectl edit svc stable-kube-prometheus-sta-prometheus -n monitoring` и вносим изменения
+Скриншот выполнения:
 
 <p align="center">
   <img width="1200" height="600" src="./image/prometheus.png">
 </p>
 
-kubectl edit svc stable-grafana -n monitoring и вносим изменения
+И команду `kubectl edit svc stable-grafana -n monitoring` и вносим изменения
+Скриншот выполнения:
 
 <p align="center">
   <img width="1200" height="600" src="./image/grafana.png">
 </p>
 
-</details>
 
 Проверяем внесенные изменения
+Команды выполнения:
 
 <details>
-
-<summary>Команды выполнения</summary>
 
 ```
 ubuntu@control:~$ kubectl get all -n monitoring
@@ -988,21 +981,19 @@ statefulset.apps/alertmanager-stable-kube-prometheus-sta-alertmanager   1/1     
 statefulset.apps/prometheus-stable-kube-prometheus-sta-prometheus       1/1     3m7s
 ```
 
+</details>
 
 Логин/пароль для доступа к вэб-интерфейсу: admin/prom-operator
-
+Скриншот выполнения:
 <p align="center">
   <img width="1200" height="600" src="./image/dashboard.png">
 </p>
 
-</details>
+4. Разворачиваем тестовое приложение на Kubernetes кластере.
 
-
-Разворачиваем тестовое приложение на Kubernetes кластере.
+Создаем манифест Deployment с тестовым приложением:
 
 <details>
-
-<summary>Создаем манифест Deployment с тестовым приложением:</summary>
 
 ```
 ---
@@ -1044,9 +1035,10 @@ spec :
 
 </details>
 
-<details>
+Клонируем репозиторий с приложением на мастер ноду
+Команды выполнения:
 
-<summary>Клонируем репозиторий с приложением на мастер ноду, и применяем манифест deployment:</summary>
+<details>
 
 ```
 ubuntu@control:~$ git clone https://github.com/anfilippov7/devops-application.git
@@ -1061,9 +1053,9 @@ Resolving deltas: 100% (29/29), done.
 
 </details>
 
-<details>
+Создаем namespace для приложения и разворачиваем его, и применяем манифест deployment
 
-<summary>Создаем namespace для приложения и разворачиваем его:</summary>
+<details>
 
 ```
 ubuntu@control:~$ sudo kubectl create namespace application
@@ -1088,9 +1080,7 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 
 </details>
 
-<details>
-
-<summary>Проверяем работу приложения через браузер</summary>
+Проверяем работу приложения через браузер
 
 <p align="center">
   <img width="1200" height="600" src="./image/django1.png">
@@ -1114,7 +1104,6 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
   <img width="1200" height="600" src="./image/django4.png">
 </p>
 
-</details>
 
 ---
 
@@ -1142,15 +1131,11 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 
 1. Для организации процессов CI/CD воспользуемся функционалом GitLab, создаем репозиторий и отправляем наше приложение в этот репозиторий:
 
-<details>
-
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab.png">
 </p>
 
-</details>
-
-2. Заливаем приложение в созданный репозиторий GitLab:
+Заливаем приложение в созданный репозиторий GitLab:
 
 <details>
 
@@ -1178,29 +1163,21 @@ To https://gitlab.com/anfilippov7/devops-application.git
 
 </details>
 
-3. Проверяем результат на GitLab:
-
-<details>
+Проверяем результат на GitLab:
 
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab2.png">
 </p>
 
-</details>
+Для автоматизации процесса CI/CD создаем GitLab Runner, который будет выполнять задачи, указанные в файле .gitlab-ci.yml
 
-4. Для автоматизации процесса CI/CD создаем GitLab Runner, который будет выполнять задачи, указанные в файле .gitlab-ci.yml
-
-5. На странице настроек проекта в разделе подключения GitLab Runner создаем Runner. Указанные на странице данные понадобятся для регистрации и аутентификации Runner'а в проекте.
-
-<details>
+На странице настроек проекта в разделе подключения GitLab Runner создаем Runner. Указанные на странице данные понадобятся для регистрации и аутентификации Runner'а в проекте.
 
 <p align="center">
   <img width="1200" height="600" src="./image/gitlab3.png">
 </p>
 
-</details>
-
-6. Выполняем подготовку Kubernetes кластера к установке GitLab Runner'а. Создаем отдельный Namespace, в котором будет располагаться GitLab Runner и создаем Kubernetes secret, который будет использоваться для регистрации установленного в дальнейшем GitLab Runner:
+2. Выполняем подготовку Kubernetes кластера к установке GitLab Runner'а. Создаем отдельный Namespace, в котором будет располагаться GitLab Runner и создаем Kubernetes secret, который будет использоваться для регистрации установленного в дальнейшем GitLab Runner:
 
 <details>
 
@@ -1213,10 +1190,10 @@ secret/runner-secret created
 
 </details>
 
-7. Также подготавливаем файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
+Также подготавливаем файл значений values.yaml, для того, чтобы указать в нем количество Runners, время проверки наличия новых задач, настройка логирования, набор правил для доступа к ресурсам Kubernetes, ограничения на ресурсы процессора и памяти.
 
 
-8. Загружаем Runner из репозитория на ноду control
+3. Загружаем Runner из репозитория на ноду control
 
 <details>
 
@@ -1239,7 +1216,7 @@ From https://github.com/anfilippov7/devops-application
 
 </details>
 
-9. Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
+4. Приступаем к установке GitLab Runner. Устанавливать будем используя Helm:
 
 <details>
 
@@ -1265,7 +1242,7 @@ Your GitLab Runner should now be registered against the GitLab instance reachabl
 
 </details>
 
-10. Проверяем результат установки:
+5. Проверяем результат установки:
 
 <details>
 
@@ -1280,17 +1257,13 @@ gitlab-runner-7854c6cb4d-kq7bq   1/1     Running   0          8m20s
 
 </details>
 
-11. GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
-
-<details>
+6. GitLab Runner установлен и запущен. Также можно через web-интерфейс проверить, подключился ли GitLab Runner к GitLab репозиторию:
 
 <p align="center">
   <img width="1200" height="600" src="./image/runner.png">
 </p>
 
-</details>
-
-12. Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
+7. Для выполнения GitLab CI/CD необходимо написать код выполнения Pipeline `.gitlab-ci.yml` для автоматической сборки docker image и деплоя приложения при изменении кода:
 
 <details>
 
@@ -1352,7 +1325,7 @@ Deploy:
 </details>
 
 
-13. Создаем secret kubectl
+8. Создаем secret kubectl
 
 <details>
 
@@ -1367,7 +1340,7 @@ registrysecret   kubernetes.io/dockerconfigjson   1      4m48s
 
 </details>
 
-14. Для доступа к `image` на `dockerhub` прописывем созданный secret `registrysecret` в файл `deployment.yaml`
+9. Для доступа к `image` на `dockerhub` прописывем созданный secret `registrysecret` в файл `deployment.yaml`
 
 <details>
 
@@ -1413,7 +1386,7 @@ spec :
 
 </details>
 
-15. Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
+10. Создаем сервисный аккаунт build-robot в пространстве имен application, с помощью которого будет производиться аутентификация ci/cd процесса gitlab на нашем кластере kubernetes
 
 <details>
 
@@ -1429,7 +1402,7 @@ rolebinding.rbac.authorization.k8s.io/build-robot created
 
 </details>
 
-16. Просмотрим созданный аккаунт
+11. Просмотрим созданный аккаунт
 
 <details>
 
@@ -1447,7 +1420,7 @@ metadata:
 
 </details>
 
-17. Создаем секрет для аккаунта build-robot в пространстве имен application
+12. Создаем секрет для аккаунта build-robot в пространстве имен application
 
 <details>
 
@@ -1467,7 +1440,7 @@ secret/build-robot-secret created
 
 </details>
 
-18. Проверяем созданный секрет
+13. Проверяем созданный секрет
 
 <details>
 
@@ -1497,7 +1470,7 @@ type: kubernetes.io/service-account-token
 
 </details>
 
-19. Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
+14. Токен созданного secret копируем и вставляем в переменную K8S_CI_TOKEN
 
 <details>
 
@@ -1507,7 +1480,7 @@ type: kubernetes.io/service-account-token
 
 </details>
 
-20. Вносим изменения в файл .gitlab-ci.yml
+25. Вносим изменения в файл .gitlab-ci.yml
 
 <details>
 
@@ -1573,7 +1546,7 @@ Deploy:
 Вторая стадия (deploy) выполняется только для ветки main и только при условии, что первая стадия build была выполнена успешно. На этой стадии происходит подключение и аутентификация ci/cd процесса gitlab на нашем кластере kubernetes, в данном случае с ip адресом и портом 89.169.150.207:6443. Затем перезапускается Deployment для применения обновленного приложения. 
 
 
-21. Проверим работу процесса CI/CD
+16. Проверим работу процесса CI/CD
 
  добавим новую сущность в наше приложение, например информацию о доставке товаров со склада:
  добавляем соответствующий маршрут `logistic` в файл `urls.py`
@@ -1595,7 +1568,7 @@ urlpatterns = router.urls
 
 </details>
 
- чтобы не было ошибки приложения создаем LogisticViewSet (просто для примера) в файле views.py
+Чтобы не было ошибки приложения создаем LogisticViewSet (просто для примера) в файле views.py
 
 <details>
   
@@ -1680,7 +1653,7 @@ class Logistic(models.Model):
 
 </details>
 
-22. Выполняем проверку работы непрерывной интеграции
+17. Выполняем проверку работы непрерывной интеграции
 
  отправляем новый коммит с изменениями и тегом на gitlab
  
@@ -1706,9 +1679,8 @@ To https://gitlab.com/anfilippov7/devops-application.git
 
 </details>
 
-23. Смотрим работу выполняемую в Gitlab:
+18. Смотрим работу выполняемую в Gitlab:
 
-<details>
 <p align="center">
   <img width="1200" height="600" src="./image/git1.png">
 </p>
@@ -1716,15 +1688,12 @@ To https://gitlab.com/anfilippov7/devops-application.git
 <p align="center">
   <img width="1200" height="600" src="./image/git2.png">
 </p>
-</details>
 
-24. У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
+19. У приложения появился новый маршрут "logistic": "http://89.169.150.207:32225/api/v1/logistic/"
 
-<details>
 <p align="center">
   <img width="1200" height="600" src="./image/logistic.png">
 </p>
-</details>
 
 ---
 ## Что необходимо для сдачи задания?
