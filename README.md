@@ -58,9 +58,10 @@
 
 1. Создаем сервисный аккаунт, который будет использоваться Terraform для работы с инфраструктурой.
 
-   - <details>
-   
-   <summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network)</summary>
+ 
+<details>
+
+- <summary>Пишем код для создания аккаунта, бэкенда и каталога для S3 bucket с помощью `terraform`, содержимое файла account.tf (в каталоге terraform_s3_network)</summary>
 
 ```
 # Создаем сервисный аккаунт для Terraform
@@ -109,9 +110,9 @@ provisioner "local-exec" {
 
 2. Пробуем выполение созданного кода, проверяем работу команд `terraform apply` и `terraform destroy`.
 
-   - <details>
+<details>
 
-   <summary>Создание ресурсов</summary>
+<summary>Создание ресурсов</summary>
 
 
 ```
