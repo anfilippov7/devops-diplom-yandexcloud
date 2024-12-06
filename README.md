@@ -344,20 +344,15 @@ resource "yandex_vpc_subnet" "subnet-b" {
 
 </details> 
 
-2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
+-
 
+2. При помощи Terraform подготовим 3 виртуальных машины Compute Cloud на которых затем будем разворачивать Kubernetes-кластер.
 
 Для подключения к создаваемым виртуальным машинам с нашей локальной машины предварительно создаем на нашей локальной машине ключ достура с помощью команды `ssh-keygen -t ed25519`, затем с помощью Terraform этот код записывается в соответствующие переменные.
 
  - Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):
 
-<summary>Код Terraform для создания виртуальных машин, записанный в файле main.tf (в каталоге terraform_prod):</summary>
-
 <details>
-
-
-
-
 
 ```
 locals {
@@ -452,13 +447,13 @@ resource "yandex_compute_instance" "node1" {
 
 </details>
 
+-
+
 3. Для разворачивания Kubernetes-кластера скачиваем на свою локальную машину [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)
 
+- Подготавливаем файл ansible.tf для установки Kubernetes-кластера, (в каталоге terraform_prod). В результате в файл hosts.yaml записываются ip адреса созданных виртуальных машин и далее выполняется плейбук из состава библиотеки Kubespray: 
+
 <details>
-
-<summary>Подготавливаем файл ansible.tf для установки Kubernetes-кластера, (в каталоге terraform_prod):</summary> 
-
-В результате в файл hosts.yaml записываются ip адреса созданных виртуальных машин и далее выполняется плейбук из состава библиотеки Kubespray: 
 
 ```
 resource "local_file" "ansible_inventory" { 
@@ -530,18 +525,13 @@ resource "null_resource" "ansible_provisioner" {
 
 </details>
 
+- 
 
+4. Перед выполнением кода для создания виртуальных машин должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket. После выполнения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
 
+ - Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ
 
-4. Перед выполнением кода для создания виртуальных машин и должен быть выполнен код из каталога terraform_s3_network создания аккаунта, бэкенда и каталога для S3 bucket 
-
-После выполения вышеобозначенного кода в файле backend.tfvars создаются ключи ACCESS_KEY и SECRET_KEY, выполняем инициализию бэкенд с помощью кода terraform init -backend-config="access_key=<your access key>" -backend-config="secret_key=<your secret key>"
-
-<details>
-
-<summary>Выполняем `terraform apply`, в результате создаются ВМ и с помощью ansible (файл ansible.tf) разворачивается Kubernetes-кластер на созданных ВМ</summary> 
-
-Результат выполнения кода terraform и плейбука ansible:
+ - Результат выполнения кода terraform и плейбука ansible:
 
 <p align="center">
   <img width="1200" height="600" src="./image/kubernetes.png">
@@ -555,10 +545,7 @@ resource "null_resource" "ansible_provisioner" {
   <img width="1200" height="600" src="./image/subnet.png">
 </p>
 
-</details>
-
-
-После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
+ - После выполнения кода (создания ВМ и Kubernetes-кластера) на управляющей ноде создаем директорию для хранения файла конфигурации, копируем созданный при установке Kubernetes кластера конфигурационный файл в эту директорию, и назначаем права для пользователя на директорию и файл конфигурации :
 
 <details>
 
@@ -585,7 +572,7 @@ drwxr-xr-x 6 ubuntu ubuntu 4096 Oct  1 07:37 ../
 
 </details>
 
-Проверяем доступность подов и нод кластера:
+ - Проверяем доступность подов и нод кластера:
 
 <details>
 
