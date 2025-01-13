@@ -35,10 +35,11 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
       TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
       TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+      BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v2
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
@@ -46,7 +47,7 @@ jobs:
         terraform_version: "1.5.5"
 
     - name: Terraform Init
-      run: terraform -chdir=./terraform_prod init -backend-config="access_key=$AWS_ACCESS_KEY" -backend-config="secret_key=$AWS_SECRET_KEY"
+      run: terraform -chdir=./terraform_prod init -backend-config="access_key=$AWS_ACCESS_KEY" -backend-config="secret_key=$AWS_SECRET_KEY" -backend-config="bucket=$BUCKET_TF_STATE"
 
     - name: Terraform Format and Validate
       run: terraform -chdir=./terraform_prod validate
