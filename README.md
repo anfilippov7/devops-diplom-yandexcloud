@@ -1105,6 +1105,168 @@ replicaset.apps/djangoapps-845746bbff   1         1         1       28s
 </p>
 
 
+
+5. Настройка отслеживания изменений инфраструктуры
+
+для этого задеплоим и настром в кластере atlantis для отслеживания изменений инфраструктуры
+
+- добавляем репозиторий в helm
+
+```
+ubuntu@control:~$ helm repo add runatlantis https://runatlantis.github.io/helm-charts
+"runatlantis" has been added to your repositories
+```
+
+ -  создаем файл values.yaml
+```
+ubuntu@control:~$ helm inspect values runatlantis/atlantis > values.yaml
+ubuntu@control:~$ ls -l
+total 60
+drwxrwxr-x 5 ubuntu ubuntu  4096 Oct  3 07:16 devops-application
+-rw-rw-r-- 1 ubuntu ubuntu   342 Oct  4 09:27 Dockerfile
+-rwx------ 1 ubuntu ubuntu 11694 Oct  3 08:48 get_helm.sh
+drwxrwxr-x 2 ubuntu ubuntu  4096 Oct  4 09:27 helm-runner
+drwxrwxr-x 2 ubuntu ubuntu  4096 Oct  4 09:27 k8s
+-rw-rw-r-- 1 ubuntu ubuntu    20 Oct  4 09:27 README.md
+drwxrwxr-x 4 ubuntu ubuntu  4096 Oct  4 09:27 stocks_products
+-rw-rw-r-- 1 ubuntu ubuntu 23356 Jan  4 05:13 values.yaml
+```
+
+
+ - деплоим 
+ 
+ubuntu@control:~$ helm install atlantis runatlantis/atlantis -f values.yaml
+NAME: atlantis
+LAST DEPLOYED: Sun Jan  5 16:38:11 2025
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+2. Atlantis will not start successfully unless at least one of the following sets of credentials are specified (see values.yaml for detailed usage):
+  - github
+  - githubApp
+  - gitea
+  - gitlab
+  - bitbucket
+
+
+ - создаем секрет (создал неправильный)
+
+ubuntu@control:~$ echo -n "mytoken" > token
+ubuntu@control:~$ echo -n "myrsecret" > webhook-secret
+ubuntu@control:~$ kubectl create secret generic atlantis-vcs --from-file=token --from-file=webhook-secret
+secret/atlantis-vcs created
+ubuntu@control:~$ ls
+devops-application  Dockerfile  get_helm.sh  helm-runner  k8s  README.md  stocks_products  token  values.yaml  webhook-secret
+ubuntu@control:~$ cat webhook-secret 
+myrsecretubuntu@control:~$ cat token
+mytokenubuntu@control:~$ 
+
+
+
+ - описание проблемы с подом атлантис
+
+ubuntu@control:~$ kubectl describe pod atlantis-0 
+Name:             atlantis-0
+Namespace:        default
+Priority:         0
+Service Account:  atlantis
+Node:             <none>
+Labels:           app=atlantis
+                  apps.kubernetes.io/pod-index=0
+                  controller-revision-hash=atlantis-58bd675947
+                  release=atlantis
+                  statefulset.kubernetes.io/pod-name=atlantis-0
+Annotations:      checksum/config: 01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b
+                  checksum/repo-config: 5b8994e30857586c2e43da80b3a8882adfe91e8934f8ddd41bc394becf34ea11
+Status:           Pending
+IP:               
+IPs:              <none>
+Controlled By:    StatefulSet/atlantis
+Containers:
+  atlantis:
+    Image:      ghcr.io/runatlantis/atlantis:v0.32.0
+    Port:       4141/TCP
+    Host Port:  0/TCP
+    Args:
+      server
+    Liveness:   http-get http://:4141/healthz delay=5s timeout=5s period=60s #success=1 #failure=5
+    Readiness:  http-get http://:4141/healthz delay=5s timeout=5s period=60s #success=1 #failure=5
+    Environment:
+      PATH:                                  /plugins:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      ATLANTIS_ENABLE_DIFF_MARKDOWN_FORMAT:  true
+      ATLANTIS_TF_DISTRIBUTION:              terraform
+      ATLANTIS_LOG_LEVEL:                    debug
+      ATLANTIS_DATA_DIR:                     /atlantis-data
+      ATLANTIS_REPO_ALLOWLIST:               github.com/anfilippov7/*
+      ATLANTIS_PORT:                         4141
+      ATLANTIS_REPO_CONFIG:                  /etc/atlantis/repos.yaml
+      ATLANTIS_ATLANTIS_URL:                 http://atlantis.nik.com
+      ATLANTIS_GH_USER:                      atlantis-nik
+      ATLANTIS_GH_TOKEN:                     <set to the key 'github_token' in secret 'atlantis-vcs'>   Optional: false
+      ATLANTIS_GH_WEBHOOK_SECRET:            <set to the key 'github_secret' in secret 'atlantis-vcs'>  Optional: false
+    Mounts:
+      /atlantis-data from atlantis-data (rw)
+      /etc/atlantis/repos.yaml from repo-config (ro,path="repos.yaml")
+      /home/atlantis/.aws from aws-volume (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-t4m94 (ro)
+      home/atlantis/.ssh from ssh-volume (rw)
+      home/atlantis/terraform_files from tf-volume (rw)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  atlantis-data:
+    Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:  atlantis-data
+    ReadOnly:   false
+  aws-volume:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  aws-creds
+    Optional:    false
+  repo-config:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      atlantis-repo-config
+    Optional:  false
+  ssh-volume:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  secret-ssh-auth
+    Optional:    false
+  tf-volume:
+    Type:                Projected (a volume that contains injected data from multiple sources)
+    ConfigMapName:       terraformrc
+    ConfigMapOptional:   <nil>
+    SecretName:          yc-key-secret
+    SecretOptionalName:  <nil>
+  kube-api-access-t4m94:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age                  From               Message
+  ----     ------            ----                 ----               -------
+  Warning  FailedScheduling  4m7s (x12 over 59m)  default-scheduler  0/3 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
+ubuntu@control:~$ kubectl get events
+LAST SEEN   TYPE      REASON             OBJECT                                MESSAGE
+72s         Warning   FailedScheduling   pod/atlantis-0                        0/3 nodes are available: pod has unbound immediate PersistentVolumeClaims. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
+75s         Normal    FailedBinding      persistentvolumeclaim/atlantis-data   no persistent volumes available for this claim and no storage class is set
+ubuntu@control:~$ kubectl get storageclass
+No resources found
+
+
+
+
+
+
+
+
 ---
 
 ### Установка и настройка CI/CD
