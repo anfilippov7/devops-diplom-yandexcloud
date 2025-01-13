@@ -29,12 +29,12 @@ variable "default_zone" {
 
 variable "bucket_name" {
   type        = string
-  default     = "diplom-state"
+  default     = "cicd-state"
   description = "VPC network&subnet name"
 }
 
 variable "account_name" {
   type        = string
-  default     = "service"
+  default     = "cicd"
   description = "VPC network&subnet name"
 }
