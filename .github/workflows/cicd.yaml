@@ -28,9 +28,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TOKEN: ${{ secrets.YC_TOKEN }}
-      CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
-      FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+      token: ${{ secrets.YC_TOKEN }}
+      cloud_id: ${{ secrets.YC_CLOUD_ID }}
+      folder_id: ${{ secrets.YC_FOLDER_ID }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
       TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
@@ -55,9 +55,9 @@ jobs:
     - name: Terraform Plan
       run: |
         terraform -chdir=./terraform_prod plan -input=false -out=tfplan \
-        -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
-        -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
-        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \
+        -var="token=${{ secrets.YC_TOKEN }}" \
+        -var="cloud_id=${{ secrets.YC_CLOUD_ID }}" \
+        -var="folder_id=${{ secrets.YC_FOLDER_ID }}" \
 
     - name: Terraform Apply (Automatic Trigger)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -71,7 +71,7 @@ jobs:
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.destroy == 'true'
       run: |
         terraform -chdir=./terraform_prod destroy -input=false -auto-approve \
-        -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
-        -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
-        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" 
+        -var="token=${{ secrets.YC_TOKEN }}" \
+        -var="cloud_id=${{ secrets.YC_CLOUD_ID }}" \
+        -var="folder_id=${{ secrets.YC_FOLDER_ID }}" 
 
