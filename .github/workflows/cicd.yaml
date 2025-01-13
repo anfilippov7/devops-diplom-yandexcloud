@@ -38,38 +38,39 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
       with:
-        terraform_version: 1.5.5
+        terraform_version: "1.5.5"
 
     - name: Terraform Init
-      run: terraform -chdir=./terraform_s3_network init
+      run: terraform -chdir=./terraform_prod init
 
     - name: Terraform Format and Validate
-      run: terraform -chdir=./terraform_s3_network validate
+      run: terraform -chdir=./terraform_prod validate
 
     - name: Terraform Plan
       run: |
-        terraform -chdir=./terraform_s3_network plan -input=false -out=tfplan \
+        terraform -chdir=./terraform_prod plan -input=false -out=tfplan \
         -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
         -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
         -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \
 
     - name: Terraform Apply (Automatic Trigger)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: terraform -chdir=./terraform_s3_network apply -input=false tfplan
+      run: terraform -chdir=./terraform_prod apply -input=false tfplan
 
     - name: Terraform Apply (Manual Trigger)
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.apply == 'true'
-      run: terraform -chdir=./terraform_s3_network apply -input=false tfplan
+      run: terraform -chdir=./terraform_prod apply -input=false tfplan
 
     - name: Terraform Destroy (Manual Trigger)
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.destroy == 'true'
       run: |
-        terraform -chdir=./terraform_s3_network destroy -input=false -auto-approve \
+        terraform -chdir=./terraform_prod destroy -input=false -auto-approve \
         -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
         -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
-        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}"
+        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" 
+
