@@ -55,8 +55,8 @@ jobs:
       run: |
         terraform -chdir=./terraform_s3_network plan -input=false -out=tfplan \
         -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
-        -var="YC_CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
-        -var="YC_FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \
+        -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
+        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \
 
     - name: Terraform Apply (Automatic Trigger)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -71,5 +71,5 @@ jobs:
       run: |
         terraform -chdir=./terraform_s3_network destroy -input=false -auto-approve \
         -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
-        -var="YC_CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
-        -var="YC_FOLDER_ID=${{ secrets.YC_FOLDER_ID }}"
+        -var="CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
+        -var="FOLDER_ID=${{ secrets.YC_FOLDER_ID }}"
