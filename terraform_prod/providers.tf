@@ -5,9 +5,9 @@ terraform {
       version = "0.75.0"
     }
   }
-}
 
-terraform {
+
+
   backend "s3" {
     endpoint = "storage.yandexcloud.net"
     bucket = "cicd-state"
@@ -24,3 +24,5 @@ provider "yandex" {
   folder_id = var.FOLDER_ID
   zone      = var.default_zone
 }
+
+
