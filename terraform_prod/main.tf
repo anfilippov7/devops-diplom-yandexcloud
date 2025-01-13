@@ -25,7 +25,7 @@ resource "yandex_compute_instance" "control" {
 
   resources {
     core_fraction = var.core_fraction
-    cores = 4
+    cores = 2
     memory = 4
   }
 
