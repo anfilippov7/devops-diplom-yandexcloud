@@ -28,11 +28,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      token: ${{ secrets.YC_TOKEN }}
-      cloud_id: ${{ secrets.YC_CLOUD_ID }}
-      folder_id: ${{ secrets.YC_FOLDER_ID }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
+      YC_TOKEN: ${{ secrets.YC_TOKEN }}
+      YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
+      YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+      AWS_SECRET_ACCESS: ${{ secrets.AWS_SECRET_KEY }}
       TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
       TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
       BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
@@ -47,7 +47,7 @@ jobs:
         terraform_version: "1.5.5"
 
     - name: Terraform Init
-      run: terraform -chdir=./terraform_prod init -backend-config="access_key=$AWS_ACCESS_KEY_ID" -backend-config="secret_key=$AWS_SECRET_ACCESS_KEY" -backend-config="bucket=$BUCKET_TF_STATE"
+      run: terraform -chdir=./terraform_prod init -backend-config="access_key=$AWS_ACCESS_KEY" -backend-config="secret_key=$AWS_SECRET_ACCESS" -backend-config="bucket=$BUCKET_TF_STATE"
 
     - name: Terraform Format and Validate
       run: terraform -chdir=./terraform_prod validate
@@ -55,9 +55,9 @@ jobs:
     - name: Terraform Plan
       run: |
         terraform -chdir=./terraform_prod plan -input=false -out=tfplan \
-        -var="token=${{ secrets.YC_TOKEN }}" \
-        -var="cloud_id=${{ secrets.YC_CLOUD_ID }}" \
-        -var="folder_id=${{ secrets.YC_FOLDER_ID }}" \
+        -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
+        -var="YC_CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
+        -var="YC_FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \
 
     - name: Terraform Apply (Automatic Trigger)
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -71,7 +71,7 @@ jobs:
       if: github.event_name == 'workflow_dispatch' && github.event.inputs.destroy == 'true'
       run: |
         terraform -chdir=./terraform_prod destroy -input=false -auto-approve \
-        -var="token=${{ secrets.YC_TOKEN }}" \
-        -var="cloud_id=${{ secrets.YC_CLOUD_ID }}" \
-        -var="folder_id=${{ secrets.YC_FOLDER_ID }}" 
+        -var="YC_TOKEN=${{ secrets.YC_TOKEN }}" \
+        -var="YC_CLOUD_ID=${{ secrets.YC_CLOUD_ID }}" \
+        -var="YC_FOLDER_ID=${{ secrets.YC_FOLDER_ID }}" \ 
 
