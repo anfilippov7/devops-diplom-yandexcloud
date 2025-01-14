@@ -47,7 +47,12 @@ jobs:
         terraform_version: "1.5.5"
 
     - name: Terraform Init
-      run: terraform -chdir=./terraform_prod init -backend-config="access_key=${{ env.AWS_ACCESS_KEY_ID }} -backend-config="secret_key=${{ env.AWS_SECRET_ACCESS_KEY }} 
+#      uses: hashicorp/terraform-github-actions@master
+#      with:
+#        tf_actions_version: 0.12.13
+#        tf_actions_subcommand: 'init'
+#        args: '-backend-config="access_key=${{ env.AWS_ACCESS_KEY_ID }}" -backend-config="secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}"' 
+      run: terraform -chdir=./terraform_prod init -backend-config="access_key=${{ env.AWS_ACCESS_KEY_ID }}" -backend-config="secret_key=${{ env.AWS_SECRET_ACCESS_KEY }}" 
 
     - name: Terraform Format and Validate
       run: terraform -chdir=./terraform_prod validate
