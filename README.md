@@ -1194,7 +1194,7 @@ jobs:
  - в репозитории с проектом github создаем необходимые secrets для выполнения кода workflow:
 
 <p align="center">
-  <img width="1200" height="600" src="./image/secret.png">
+  <img width="1200" height="600" src="./image/secrets.png">
 </p>
 
  - после изменения инфраструктуры и отправки изменений в репозиторий github процесс ci/cd согласно коду workflow выполняется в ручном режиме: 
